@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/utils"
 	"github.com/willie68/wssg/templates"
 )
 
@@ -57,7 +58,7 @@ func CreatePage(rootFolder string, args []string, force bool) error {
 	}
 	log.Infof("creating a new page in section \"%v\" with name: %s", sections, name)
 	pageFile := filepath.Join(rootFolder, filepath.Join(sections...), fmt.Sprintf("%s.md", name))
-	ok, err := fileExists(pageFile)
+	ok, err := utils.FileExists(pageFile)
 	if err != nil {
 		return err
 	}

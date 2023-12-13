@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/utils"
 	"github.com/willie68/wssg/templates"
 )
 
@@ -91,13 +92,13 @@ func initFolders(rootFolder string, force bool) error {
 func initConfig(rootFolder string) error {
 	siteConfigDir := filepath.Join(rootFolder, config.WssgFolder)
 	siteConfigFile := filepath.Join(siteConfigDir, config.SiteFile)
-	err := writeAsYaml(siteConfigFile, config.SiteDefault)
+	err := utils.WriteAsYaml(siteConfigFile, config.SiteDefault)
 	if err != nil {
 		return err
 	}
 
 	genConfigFile := filepath.Join(siteConfigDir, config.GenerateFile)
-	err = writeAsYaml(genConfigFile, config.GenDefault)
+	err = utils.WriteAsYaml(genConfigFile, config.GenDefault)
 	if err != nil {
 		return err
 	}

@@ -1,13 +1,22 @@
 package generator
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
+	"dario.cat/mergo"
+	"github.com/adrg/frontmatter"
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/html"
+	"github.com/gomarkdown/markdown/parser"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/utils"
+	"gopkg.in/yaml.v3"
 )
 
 type Generator struct {
@@ -16,7 +25,16 @@ type Generator struct {
 	genConfig  config.Generate
 	sideConfig config.General
 	sections   map[string]config.General
+	pages      []page
 	log        *logging.Logger
+}
+
+type page struct {
+	name     string
+	filename string
+	section  string
+	path     string
+	cnf      config.General
 }
 
 var ()
@@ -26,6 +44,7 @@ func New(rootFolder string, force bool) Generator {
 		rootFolder: rootFolder,
 		force:      force,
 		log:        logging.New().WithName("generator"),
+		pages:      make([]page, 0),
 	}
 	g.init()
 	return g
@@ -39,7 +58,6 @@ func (g *Generator) init() {
 
 func (g *Generator) Execute() error {
 	g.init()
-
 	err := filepath.Walk(g.rootFolder,
 		func(path string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -52,13 +70,18 @@ func (g *Generator) Execute() error {
 			if strings.HasPrefix(name, ".") {
 				return filepath.SkipDir
 			}
+			section := strings.ReplaceAll(path, "\\", "/")
+			sections := strings.Split(section, "/")
 			if info.IsDir() {
-				// create a section config
+				return nil
 			}
-
 			fmt.Println(path, info.Name(), info.Size())
-			if !info.IsDir() && g.isProceeable(name) {
-				g.processFile(info)
+			section = strings.Join(sections[1:len(sections)-1], "/")
+			if g.isTemplate(name) {
+				g.registerPage(section, path, info)
+			} else {
+				// copy as static file to output
+				g.copy2Output(section, path, info)
 			}
 			return nil
 		})
@@ -66,17 +89,208 @@ func (g *Generator) Execute() error {
 		g.log.Errorf("error rocessing site: %V", err)
 		return err
 	}
+	for _, pg := range g.pages {
+		err = g.processPage(pg)
+		if err != nil {
+			g.log.Errorf("error rocessing site: %V", err)
+			return err
+		}
+	}
 	return nil
 }
 
-func (g *Generator) isProceeable(name string) bool {
+func (g *Generator) isTemplate(name string) bool {
 	if strings.HasSuffix(strings.ToLower(name), ".md") {
 		return true
 	}
 	return false
 }
 
-func (g *Generator) processFile(info os.FileInfo) error {
+// registerPage this will only process the page config and cache information about the page
+func (g *Generator) registerPage(section string, path string, info os.FileInfo) error {
 	g.log.Debugf("start processing file: %s", info.Name())
+	secCnf := g.getSectionConfig(section)
+	g.log.Debugf("used config: %v", secCnf)
+	dt, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	// extract front matter yaml and md
+	pageCnf := make(config.General)
+	_, err = frontmatter.Parse(strings.NewReader(string(dt)), &pageCnf)
+	if err != nil {
+		return err
+	}
+
+	// process pageCnf
+	defaults := make(config.General)
+	defaults["name"] = strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+	defaults["processor"] = config.ProcInternal
+	err = mergo.Merge(&pageCnf, defaults)
+	if err != nil {
+		return err
+	}
+	pageCnf, err = g.processPageCnf(pageCnf, secCnf)
+	if err != nil {
+		return err
+	}
+	pg := page{
+		name:     pageCnf["name"].(string),
+		filename: info.Name(),
+		section:  section,
+		path:     path,
+		cnf:      pageCnf,
+	}
+	g.pages = append(g.pages, pg)
 	return nil
+}
+
+// processPage will now generate the desired html file
+func (g *Generator) processPage(pg page) error {
+	g.log.Debugf("start processing file: %s", pg.filename)
+	secCnf := g.getSectionConfig(pg.section)
+	g.log.Debugf("used config: %v", secCnf)
+	dt, err := os.ReadFile(pg.path)
+	if err != nil {
+		return err
+	}
+
+	// extract md
+	ignore := make(config.General)
+	md, err := frontmatter.Parse(strings.NewReader(string(dt)), &ignore)
+	if err != nil {
+		return err
+	}
+	// convert md to html
+	ht := mdToHTML(md)
+	// set converted md as body
+	pg.cnf["body"] = string(ht)
+	pg.cnf["section"] = secCnf
+	pg.cnf["site"] = g.sideConfig
+
+	// load html layout
+	//TODO layout.html should be in the site config
+	layFile := filepath.Join(g.rootFolder, config.WssgFolder, "layout.html")
+	layout, err := os.ReadFile(layFile)
+	if err != nil {
+		return err
+	}
+	ht, err = g.mergeHTML(string(layout), pg.cnf)
+	// write html to output
+	var destPath string
+	sections := strings.Split(pg.section, "/")
+	destPath = filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
+	err = os.MkdirAll(destPath, 755)
+	if err != nil {
+		return err
+	}
+	pageHTMLFile := filepath.Join(destPath, fmt.Sprintf("%s.html", pg.name))
+	err = os.WriteFile(pageHTMLFile, ht, 0775)
+	return err
+}
+
+func (g *Generator) mergeHTML(layout string, cnf config.General) ([]byte, error) {
+	// merge html template
+	tmpl, err := template.New("htmltemplate").Parse(layout)
+	if err != nil {
+		return nil, err
+	}
+	var bb bytes.Buffer
+	err = tmpl.Execute(&bb, cnf)
+	if err != nil {
+		return nil, err
+	}
+	// merge resulting html
+	tmpl, err = template.New("htmlpage").Parse(bb.String())
+	if err != nil {
+		return nil, err
+	}
+	bb.Reset()
+	err = tmpl.Execute(&bb, cnf)
+	if err != nil {
+		return nil, err
+	}
+	return bb.Bytes(), nil
+}
+
+func (g *Generator) processPageCnf(pageCnf config.General, secCnf config.General) (config.General, error) {
+	err := mergo.Merge(&pageCnf, config.PageDefault.General())
+	if err != nil {
+		return nil, err
+	}
+	ym, err := yaml.Marshal(pageCnf)
+	if err != nil {
+		return nil, err
+	}
+	tmpl, err := template.New("pageConfig").Parse(string(ym))
+	if err != nil {
+		return nil, err
+	}
+	var bb bytes.Buffer
+	err = tmpl.Execute(&bb, secCnf)
+	if err != nil {
+		return nil, err
+	}
+	err = yaml.Unmarshal(bb.Bytes(), &pageCnf)
+	if err != nil {
+		return nil, err
+	}
+	return pageCnf, nil
+}
+
+func (g *Generator) copy2Output(section string, path string, info os.FileInfo) error {
+	sections := strings.Split(section, "/")
+	destPath := filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
+
+	err := os.MkdirAll(destPath, 755)
+	if err != nil {
+		return err
+	}
+	_, err = utils.FileCopy(path, filepath.Join(destPath, info.Name()))
+	return err
+}
+
+func (g *Generator) getSectionConfig(section string) config.General {
+	if cnf, ok := g.sections[section]; ok {
+		return cnf
+	}
+	cnf := make(config.General)
+	sections := strings.Split(section, "/")
+	sectionFile := filepath.Join(g.rootFolder, filepath.Join(sections...), config.WssgFolder, config.SectionFileName)
+	if section == "" {
+		section = "_root"
+	}
+	if ok, _ := utils.FileExists(sectionFile); ok {
+		err := utils.LoadYAML(sectionFile, &cnf)
+		if err != nil {
+			g.log.Errorf("error loading section file: %v", err)
+		}
+	}
+	cnf["site"] = g.sideConfig
+	g.sections[section] = cnf
+	return cnf
+}
+
+func (g *Generator) getRegisteredPageCnf(name string) (*page, bool) {
+	for _, v := range g.pages {
+		if v.name == name {
+			return &v, true
+		}
+	}
+	return nil, false
+}
+
+func mdToHTML(md []byte) []byte {
+	// create markdown parser with extensions
+	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
+	p := parser.NewWithExtensions(extensions)
+	doc := p.Parse(md)
+
+	// create HTML renderer with extensions
+	htmlFlags := html.CommonFlags | html.HrefTargetBlank
+	opts := html.RendererOptions{Flags: htmlFlags}
+	renderer := html.NewRenderer(opts)
+
+	return markdown.Render(doc, renderer)
 }

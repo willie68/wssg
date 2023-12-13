@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/utils"
 )
 
 // sectionCmd represents the section command
@@ -40,7 +41,7 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	name := args[0]
 	log.Infof("creating a new site in folder \"%s\" with name: %s", rootFolder, name)
 	sectionFolder := filepath.Join(rootFolder, name)
-	ok, err := fileExists(sectionFolder)
+	ok, err := utils.FileExists(sectionFolder)
 	if err != nil {
 		return err
 	}
@@ -59,11 +60,11 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	}
 	// generate default section config
 	sectionDefault := config.Section{
-		SectionName:  name,
-		SectionTitle: name,
-		Processor:    config.ProcInternal,
+		Name:      name,
+		Title:     name,
+		Processor: config.ProcInternal,
 	}.General()
 	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
-	err = writeAsYaml(sectionConfigFile, sectionDefault)
+	err = utils.WriteAsYaml(sectionConfigFile, sectionDefault)
 	return err
 }

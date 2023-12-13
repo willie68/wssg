@@ -11,13 +11,19 @@ import (
 const SiteFile = "siteconfig.yaml"
 
 type Site struct {
-	BaseURL string `yaml:"baseurl"`
-	Title   string `yaml:"title"`
+	BaseURL     string `yaml:"baseurl"`
+	Title       string `yaml:"title"`
+	Description string `yaml:"description"`
+	Keywords    string `yaml:"keywords"`
+	Language    string `yaml:"language"`
 }
 
 var SiteDefault = Site{
-	BaseURL: "example.com",
-	Title:   "example",
+	BaseURL:     "example.com",
+	Title:       "example",
+	Description: "a short description of this site",
+	Keywords:    "tutorial basic static website",
+	Language:    "en",
 }
 
 var (

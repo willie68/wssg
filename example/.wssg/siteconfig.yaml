@@ -1,2 +1,5 @@
 baseurl: example.com
 title: example
+description: a short description of this site
+keywords: tutorial basic static website
+language: de
