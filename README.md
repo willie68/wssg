@@ -43,6 +43,10 @@ Jetzt wird automatisch ein Verzeichniss mit dem Namen <sitename> erzeugt und dor
 
 generiert nun die Website. Das Ergebniss landet automatisch m Ordner `.wssg/output`
 
+# Aufbau
 
+Das Programm ist für folgende Struktur am besten geeignet. Die erste Ebene (Root) ist quais der Startpunkt. Dort muss für den Start eine index.md erstellt werden. Diese wird automatisch beim `wssg init` angelegt. Hier können dann weitere Seiten (pages) hinzugefügt werden. Zusätzliche Dateien, wie z.B. Bilder, Stylesheets, JS usw. können sowohl in den Rootordner wie auch in weiteren Unterordnern abgelegt werden. Unterordner können dann einfach per relativer Angabe referenziert werden. 
+
+Möchte man einen neuen Bereich (section) mit verschiedene Seiten anlegen, kann man das mit `wssg new section <name>` machen. Dabei wird nun, ebenso wie im root Ordner, ein Unterverzeichnis .wssg mit den Einstellungen für diesen Bereich erstellt.  
 
 # Programmparameter
