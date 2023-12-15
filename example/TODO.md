@@ -1,34 +1,19 @@
-# mit Michael besprechen
+# mit Michi besprechen
+Sicherheitsloch: Anmeldung ... "Benutzer nicht gefunden!"
 
-SIcherheitsloch: Anmeldung ... "Benutzer nicht gefunden!"
+# mit Team besprechen
 
-# mit Gemini besprechen
-
-# mit DM Team besprechen
-
-Eigentlich war der Sinn dahinter, daß man eben keine Func mehr schreiben muss. 
-Der Service implementiert ein Check Interface (Checkable, oder sowas) und wird beim wireup einfach beim Healthservice registriert. (Wo das wireup stattfindet, ist nochmal eine andere Diskussion, main finde ich da nicht optimal, weil schlecht testbar. Und wir müssen eh den Injector mit geben, denn der NIL Injector macht beim Testen Probleme.)
-Dabei entfallen dann einfach genau diese "Brücken" Funktionen. 
-btw.: Eigentlich würde ich gerne das HealthCheckable Interface aus samber.Do verwenden. 
-Dann entfiele das ganze selber registrieren. Einfach nur per do.Provide zur Verfügung stellen, fertig
 
 # sonstiges
 
 - Scan Prozess Schritt 2 in Tasks umwandeln.
-  https://intranet.easy.de/display/~w.klaas/Scan+Prozess
+  https://example.com/intranet/display/Scan+Prozess
 
 ## JSON
 
 https://jqlang.github.io/jq/manual/
 
 https://github.com/itchyny/gojq
-
-
-
-
-## Architektur
-
-### todo
 
 ### CA:
 
@@ -75,7 +60,4 @@ OpenSearch: https://opensearch.org/
 
 Solr: https://solr.apache.org/
 
-
-
 # IT
-
