@@ -9,7 +9,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/wssg/main.go",
+      "program": "${workspaceFolder}/main.go",
       "cwd": "${workspaceFolder}",
       "output": "${workspaceFolder}/debug.exe",
       "args": [
@@ -23,7 +23,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/wssg/main.go",
+      "program": "${workspaceFolder}/main.go",
       "cwd": "${workspaceFolder}",
       "output": "${workspaceFolder}/debug.exe",
       "args": [
@@ -40,7 +40,7 @@
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/wssg/main.go",
+      "program": "${workspaceFolder}/main.go",
       "cwd": "${workspaceFolder}",
       "output": "${workspaceFolder}/debug.exe",
       "args": [
@@ -53,11 +53,23 @@
       ]
     },
     {
+      "name": "wssg version",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "version",
+      ]
+    },
+    {
       "name": "wssg generate",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${workspaceFolder}/cmd/wssg/main.go",
+      "program": "${workspaceFolder}/main.go",
       "cwd": "${workspaceFolder}",
       "output": "${workspaceFolder}/debug.exe",
       "args": [
