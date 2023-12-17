@@ -16,7 +16,12 @@ var (
 		Long:  `willies web site generator`,
 		// Uncomment the following line if your bare application
 		// has an action associated with it:
-		// Run: func(cmd *cobra.Command, args []string) { },
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			logging.Root.SetLevel(logging.Fatal)
+			if verbose {
+				logging.Root.SetLevel(logging.Debug)
+			}
+		},
 	}
 	rootFolder string
 	verbose    bool
@@ -25,10 +30,6 @@ var (
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() error {
-	logging.Root.SetLevel(logging.Fatal)
-	if verbose {
-		logging.Root.SetLevel(logging.Debug)
-	}
 	err := rootCmd.Execute()
 	if err != nil {
 		return err

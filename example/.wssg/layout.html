@@ -8,6 +8,7 @@
 </head>
 
 <body>
+  {{range .pages}} <a href="{{.URLPath}}">{{.Name}}</a> {{end}}
   {{.body}}
 </body>
 

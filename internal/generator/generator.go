@@ -30,11 +30,12 @@ type Generator struct {
 }
 
 type page struct {
-	name     string
-	filename string
-	section  string
-	path     string
-	cnf      config.General
+	Name     string         `json:"name"`
+	filename string         `json:"filename"`
+	section  string         `json:"section"`
+	Path     string         `json:"path"`
+	cnf      config.General `json:"cnf"`
+	URLPath  string         `json:"urlpath"`
 }
 
 var ()
@@ -86,13 +87,13 @@ func (g *Generator) Execute() error {
 			return nil
 		})
 	if err != nil {
-		g.log.Errorf("error rocessing site: %V", err)
+		g.log.Errorf("error processing site: %V", err)
 		return err
 	}
 	for _, pg := range g.pages {
 		err = g.processPage(pg)
 		if err != nil {
-			g.log.Errorf("error rocessing site: %V", err)
+			g.log.Errorf("error processing site: %V", err)
 			return err
 		}
 	}
@@ -135,15 +136,21 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if err != nil {
 		return err
 	}
-	pg := page{
-		name:     pageCnf["name"].(string),
+	pg := &page{
+		Name:     pageCnf["name"].(string),
 		filename: info.Name(),
 		section:  section,
-		path:     path,
+		Path:     path,
 		cnf:      pageCnf,
 	}
-	g.pages = append(g.pages, pg)
+	pg = g.pageURLPath(pg)
+	g.pages = append(g.pages, *pg)
 	return nil
+}
+
+func (g *Generator) pageURLPath(pg *page) *page {
+	pg.URLPath = fmt.Sprintf("%s.html", pg.Name)
+	return pg
 }
 
 // processPage will now generate the desired html file
@@ -151,7 +158,7 @@ func (g *Generator) processPage(pg page) error {
 	g.log.Debugf("start processing file: %s", pg.filename)
 	secCnf := g.getSectionConfig(pg.section)
 	g.log.Debugf("used config: %v", secCnf)
-	dt, err := os.ReadFile(pg.path)
+	dt, err := os.ReadFile(pg.Path)
 	if err != nil {
 		return err
 	}
@@ -168,6 +175,8 @@ func (g *Generator) processPage(pg page) error {
 	pg.cnf["body"] = string(ht)
 	pg.cnf["section"] = secCnf
 	pg.cnf["site"] = g.sideConfig
+	pages := g.filterPages(pg.section)
+	pg.cnf["pages"] = pages
 
 	// load html layout
 	//TODO layout.html should be in the site config
@@ -177,6 +186,9 @@ func (g *Generator) processPage(pg page) error {
 		return err
 	}
 	ht, err = g.mergeHTML(string(layout), pg.cnf)
+	if err != nil {
+		return err
+	}
 	// write html to output
 	var destPath string
 	sections := strings.Split(pg.section, "/")
@@ -185,9 +197,19 @@ func (g *Generator) processPage(pg page) error {
 	if err != nil {
 		return err
 	}
-	pageHTMLFile := filepath.Join(destPath, fmt.Sprintf("%s.html", pg.name))
+	pageHTMLFile := filepath.Join(destPath, fmt.Sprintf("%s.html", pg.Name))
 	err = os.WriteFile(pageHTMLFile, ht, 0775)
 	return err
+}
+
+func (g *Generator) filterPages(sec string) []page {
+	ps := make([]page, 0)
+	for _, pg := range g.pages {
+		if pg.section == sec {
+			ps = append(ps, pg)
+		}
+	}
+	return ps
 }
 
 func (g *Generator) mergeHTML(layout string, cnf config.General) ([]byte, error) {
@@ -274,7 +296,7 @@ func (g *Generator) getSectionConfig(section string) config.General {
 
 func (g *Generator) getRegisteredPageCnf(name string) (*page, bool) {
 	for _, v := range g.pages {
-		if v.name == name {
+		if v.Name == name {
 			return &v, true
 		}
 	}
