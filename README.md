@@ -50,3 +50,33 @@ Das Programm ist für folgende Struktur am besten geeignet. Die erste Ebene (Roo
 Möchte man einen neuen Bereich (section) mit verschiedene Seiten anlegen, kann man das mit `wssg new section <name>` machen. Dabei wird nun, ebenso wie im root Ordner, ein Unterverzeichnis .wssg mit den Einstellungen für diesen Bereich erstellt.  
 
 # Programmparameter
+
+## Variablen für eine Seite
+
+`{{.body}}` ergibt den konvertierten Text aus der Markdown Datei.
+
+`{{.site.#}}` sind die Einstellungen für die gesamte Website. Hier stehen 1:1 alle Einstellungen aus der `siteconfig.yaml`. Beispielsweise  
+
+`{{.site.language}}` ergibt die Sprache
+
+`{{.site.title}}` den Webseitentitel. Ebenso funktionieren `{{.site.description}}` und `{{.site.keywords}}`
+
+Für die aktuelle Seite sind folgende Variablen definiert:
+
+`{{.page.URLPath}}` der relative Pfad der Seite
+
+`{{.page.Name}}` der Name der Seite
+
+`{{.page.Path}}` der Pfad auf die Ursprungsdatei 
+
+`{{.page.Title}}` der Titel der Seite
+
+ `{{range .pages}} ... {{end}}` kann über alle Seiten eines Bereiches iteriert werden. Innerhalb sind dann folgende Punkt Variablen definiert und verweisen auf die jeweilige Seite:
+
+`{{.URLPath}}` der relative Pfad der Seite
+
+`{{.Name}}` der Name der Seite
+
+`{{.Path}}` der Pfad auf die Ursprungsdatei 
+
+`{{.Title}}` der Titel der Seite

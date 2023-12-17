@@ -8,8 +8,11 @@
 </head>
 
 <body>
-  {{range .pages}} <a href="{{.URLPath}}">{{.Name}}</a> {{end}}
+  <H1>{{.page.Title}}</H1>
+  {{range .pages}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
   {{.body}}
+
+  (generated from "{{.page.Path}}")
 </body>
 
 </html>

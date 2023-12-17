@@ -31,6 +31,7 @@ type Generator struct {
 
 type page struct {
 	Name     string         `json:"name"`
+	Title    string         `json:"title"`
 	filename string         `json:"filename"`
 	section  string         `json:"section"`
 	Path     string         `json:"path"`
@@ -138,6 +139,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	}
 	pg := &page{
 		Name:     pageCnf["name"].(string),
+		Title:    pageCnf["title"].(string),
 		filename: info.Name(),
 		section:  section,
 		Path:     path,
@@ -173,6 +175,7 @@ func (g *Generator) processPage(pg page) error {
 	ht := mdToHTML(md)
 	// set converted md as body
 	pg.cnf["body"] = string(ht)
+	pg.cnf["page"] = pg
 	pg.cnf["section"] = secCnf
 	pg.cnf["site"] = g.sideConfig
 	pages := g.filterPages(pg.section)

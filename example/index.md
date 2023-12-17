@@ -1,7 +1,7 @@
 ---
 name: 'index'
 processor: internal
-title: 'index'
+title: 'Index'
 ---
 This is a new page with the title {{.title}}
 
