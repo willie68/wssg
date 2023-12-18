@@ -9,7 +9,8 @@
 
 <body>
   <H1>{{.page.Title}}</H1>
-  {{range .pages}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
+  {{$pagename := .page.Name}}
+  {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
   {{.body}}
 
   (generated from "{{.page.Path}}")
