@@ -27,7 +27,8 @@ var SiteDefault = Site{
 }
 
 var (
-	SiteConfig = make(General)
+	// SiteConfig this is the main configuration for this site
+	SiteConfig Site
 	siteLoaded bool
 )
 
@@ -36,7 +37,8 @@ func init() {
 	siteLoaded = false
 }
 
-func LoadSite(rootFolder string) General {
+// LoadSite loading the site config
+func LoadSite(rootFolder string) Site {
 	if siteLoaded {
 		return SiteConfig
 	}

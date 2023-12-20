@@ -4,7 +4,7 @@ Willie's Static Site Generator
 
 # Warum?
 
-Darum. Ich finde jeder Programmierer sollte so ein paar Sachen mal programmiert haben. Hello Wlord, Sortieralgorythmus, Datenbank, Website Generator. Letzerer fehlte mir noch.
+Darum. Ich finde jeder Programmierer sollte so ein paar Sachen mal programmiert haben. Hello World, Sortieralgorithmus, Datenbank, Website Generator. Letzterer fehlte mir noch.
 
 # Basis
 
@@ -37,11 +37,11 @@ Als erstes erzeugen wir uns eine neue Side.
 
 `wssg init ./<sitename>`
 
-Jetzt wird automatisch ein Verzeichniss mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch wird direkt eine erste Seiten (index.md) mit erzeugt.
+Jetzt wird automatisch ein Verzeichnis mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch wird direkt eine erste Seiten (index.md) mit erzeugt.
 
 `wssg generate`  
 
-generiert nun die Website. Das Ergebniss landet automatisch m Ordner `.wssg/output`
+generiert nun die Website. Das Ergebnis landet automatisch m Ordner `.wssg/output`
 
 # Aufbau
 
@@ -51,15 +51,38 @@ Möchte man einen neuen Bereich (section) mit verschiedene Seiten anlegen, kann 
 
 # Programmparameter
 
+# Seitenaufbau
+
+## Frontmatter für Markdown
+
+Die Markdown-Dateien sollten den Inhalt sollten mit einem Frontmatter Bereich starten. Dieser startet am Anfag der Datei mit `---` und endet ebenfalls mit `---`. Dazwischen steht ein Bereich mit Optionen für die aktuelle Seite im yaml Format:
+
+```yaml
+---
+name: 'index'
+processor: internal
+title: 'Index'
+order: 10
+---
+```
+
+`name`: technicshe Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` 
+
+`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `internal` zur Verfügung. Geplant ist noch ein Galerie-Prozessor, zur Erzeugung einer Bildgalerie.
+
+`title`: Der Seitentitel.  hier können auch Sonderzeichen verwendet werden.
+
+`order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. SO kann man später neue Seite bei 15, 25 usw. einfügen.
+
 ## Variablen für eine Seite
 
 `{{.body}}` ergibt den konvertierten Text aus der Markdown Datei.
 
 `{{.site.#}}` sind die Einstellungen für die gesamte Website. Hier stehen 1:1 alle Einstellungen aus der `siteconfig.yaml`. Beispielsweise  
 
-`{{.site.language}}` ergibt die Sprache
+`{{.site.Language}}` ergibt die Sprache
 
-`{{.site.title}}` den Webseitentitel. Ebenso funktionieren `{{.site.description}}` und `{{.site.keywords}}`
+`{{.site.Title}}` den Webseitentitel. Ebenso funktionieren `{{.site.Description}}` und `{{.site.Keywords}}`
 
 Für die aktuelle Seite sind folgende Variablen definiert:
 
@@ -80,3 +103,6 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 `{{.Path}}` der Pfad auf die Ursprungsdatei 
 
 `{{.Title}}` der Titel der Seite
+
+
+

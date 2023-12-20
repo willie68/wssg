@@ -2,6 +2,7 @@
 name: 'todo'
 processor: internal
 title: 'Todo'
+order: 20
 ---
 # mit Michi besprechen
 Sicherheitsloch: Anmeldung ... "Benutzer nicht gefunden!"

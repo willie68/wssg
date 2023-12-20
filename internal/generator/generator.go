@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -23,20 +24,21 @@ type Generator struct {
 	rootFolder string
 	force      bool
 	genConfig  config.Generate
-	sideConfig config.General
+	sideConfig config.Site
 	sections   map[string]config.General
 	pages      []page
 	log        *logging.Logger
 }
 
 type page struct {
-	Name     string         `json:"name"`
-	Title    string         `json:"title"`
-	filename string         `json:"filename"`
-	section  string         `json:"section"`
-	Path     string         `json:"path"`
-	cnf      config.General `json:"cnf"`
-	URLPath  string         `json:"urlpath"`
+	Name     string         `json:"name" yaml:"name"`
+	Title    string         `json:"title" yaml:"title"`
+	filename string         `json:"filename" yaml:"filename"`
+	section  string         `json:"section" yaml:"section"`
+	Path     string         `json:"path" yaml:"path"`
+	cnf      config.General `json:"cnf" yaml:"cnf"`
+	URLPath  string         `json:"urlpath" yaml:"urlpath"`
+	Order    int            `json:"order" yaml:"order"`
 }
 
 var ()
@@ -129,6 +131,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	defaults := make(config.General)
 	defaults["name"] = strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 	defaults["processor"] = config.ProcInternal
+	defaults["title"] = defaults["name"]
 	err = mergo.Merge(&pageCnf, defaults)
 	if err != nil {
 		return err
@@ -137,6 +140,10 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if err != nil {
 		return err
 	}
+	order, ok := pageCnf["order"].(int)
+	if !ok {
+		order = 0
+	}
 	pg := &page{
 		Name:     pageCnf["name"].(string),
 		Title:    pageCnf["title"].(string),
@@ -144,6 +151,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 		section:  section,
 		Path:     path,
 		cnf:      pageCnf,
+		Order:    order,
 	}
 	pg = g.pageURLPath(pg)
 	g.pages = append(g.pages, *pg)
@@ -178,7 +186,7 @@ func (g *Generator) processPage(pg page) error {
 	pg.cnf["page"] = pg
 	pg.cnf["section"] = secCnf
 	pg.cnf["site"] = g.sideConfig
-	pages := g.filterPages(pg.section)
+	pages := g.filterSortPages(pg.section)
 	pg.cnf["pages"] = pages
 
 	// load html layout
@@ -205,13 +213,17 @@ func (g *Generator) processPage(pg page) error {
 	return err
 }
 
-func (g *Generator) filterPages(sec string) []page {
+func (g *Generator) filterSortPages(sec string) []page {
 	ps := make([]page, 0)
 	for _, pg := range g.pages {
 		if pg.section == sec {
 			ps = append(ps, pg)
 		}
 	}
+	sort.Slice(ps, func(i, j int) bool {
+		// less function
+		return ps[i].Order < ps[j].Order
+	})
 	return ps
 }
 
