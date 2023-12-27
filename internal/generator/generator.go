@@ -24,7 +24,7 @@ type Generator struct {
 	rootFolder string
 	force      bool
 	genConfig  config.Generate
-	sideConfig config.Site
+	siteConfig config.Site
 	sections   map[string]config.General
 	pages      []page
 	log        *logging.Logger
@@ -56,8 +56,18 @@ func New(rootFolder string, force bool) Generator {
 
 func (g *Generator) init() {
 	g.sections = make(map[string]config.General)
-	g.sideConfig = config.LoadSite(g.rootFolder)
+	g.siteConfig = config.LoadSite(g.rootFolder)
 	g.genConfig = config.LoadGenConfig(g.rootFolder)
+}
+
+// SiteConfig return the configuration of the site
+func (g *Generator) SiteConfig() config.Site {
+	return g.siteConfig
+}
+
+// GenConfig return the configuration of the generator
+func (g *Generator) GenConfig() config.Generate {
+	return g.genConfig
 }
 
 func (g *Generator) Execute() error {
@@ -185,7 +195,7 @@ func (g *Generator) processPage(pg page) error {
 	pg.cnf["body"] = string(ht)
 	pg.cnf["page"] = pg
 	pg.cnf["section"] = secCnf
-	pg.cnf["site"] = g.sideConfig
+	pg.cnf["site"] = g.siteConfig
 	pages := g.filterSortPages(pg.section)
 	pg.cnf["pages"] = pages
 
@@ -304,7 +314,7 @@ func (g *Generator) getSectionConfig(section string) config.General {
 			g.log.Errorf("error loading section file: %v", err)
 		}
 	}
-	cnf["site"] = g.sideConfig
+	cnf["site"] = g.siteConfig
 	g.sections[section] = cnf
 	return cnf
 }

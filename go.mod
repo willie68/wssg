@@ -15,9 +15,11 @@ require (
 require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/aphistic/sweet v0.3.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/onsi/gomega v1.30.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	golang.org/x/sys v0.13.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 )
