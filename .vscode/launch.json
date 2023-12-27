@@ -79,6 +79,21 @@
         "-r",
         "./example"
       ]
+    },
+    {
+      "name": "wssg serve",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "serve",
+        "--verbose",
+        "-r",
+        "./example"
+      ]
     }
   ]
 }
