@@ -48,7 +48,6 @@ func New(rootFolder string, force bool) Generator {
 		rootFolder: rootFolder,
 		force:      force,
 		log:        logging.New().WithName("generator"),
-		pages:      make([]page, 0),
 	}
 	g.init()
 	return g
@@ -58,6 +57,7 @@ func (g *Generator) init() {
 	g.sections = make(map[string]config.General)
 	g.siteConfig = config.LoadSite(g.rootFolder)
 	g.genConfig = config.LoadGenConfig(g.rootFolder)
+	g.pages = make([]page, 0)
 }
 
 // SiteConfig return the configuration of the site
@@ -92,15 +92,21 @@ func (g *Generator) Execute() error {
 			fmt.Println(path, info.Name(), info.Size())
 			section = strings.Join(sections[1:len(sections)-1], "/")
 			if g.isTemplate(name) {
-				g.registerPage(section, path, info)
+				err := g.registerPage(section, path, info)
+				if err != nil {
+					g.log.Errorf("error registering page: %v", err)
+				}
 			} else {
 				// copy as static file to output
-				g.copy2Output(section, path, info)
+				err := g.copy2Output(section, path, info)
+				if err != nil {
+					g.log.Errorf("error copying file: %v", err)
+				}
 			}
 			return nil
 		})
 	if err != nil {
-		g.log.Errorf("error processing site: %V", err)
+		g.log.Errorf("error preproccing site: %V", err)
 		return err
 	}
 	for _, pg := range g.pages {

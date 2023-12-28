@@ -6,6 +6,6 @@ order: 100
 ---
 This is a new page with the title {{.title}}
 
-About me  safadsf
+About me 
 
 {{.site.BaseURL}} ![licht](licht.jpg)
