@@ -8,9 +8,9 @@ Darum. Ich finde jeder Programmierer sollte so ein paar Sachen mal programmiert 
 
 # Basis
 
-wssg ist ein kleiner feiner Website generator mit folgenden Features (wenn er denn fertig ist, und was ist schon fertig...)
+wssg ist ein kleiner feiner Websitegenerator mit folgenden Features (wenn er denn fertig ist, und was ist schon fertig...)
 
-- Basis sind markdown Dateien
+- Basis sind Markdown-Dateien
 - automatische Indexerstellung
 - eingebauter WebServer zum besseren Testen der Site
 - austauschbare Template Engine
@@ -21,7 +21,7 @@ wssg ist ein typisches Copy/Run Programm, deswegen auch in Golang geschrieben. E
 
 ## Copy/Run
 
-Nimm einfach die richtige Releaseversion und kopiere sie in ein Verzeichniss, daß bereits in deinem Pfad vorhanden ist. Oder kopiere das Binary in das root der neuen Site. 
+Nimm einfach die richtige Release Version und kopiere sie in ein Verzeichnis, dass bereits in deinem Pfad vorhanden ist. Oder kopiere das Binary in das root der neuen Site. 
 
 Zum Testen ob alles funktioniert gibt einfach `wssg version` ein.
 
@@ -31,17 +31,29 @@ Zum Testen ob alles funktioniert gibt einfach `wssg version` ein.
 
 # Quickstart
 
-Für den schnellen Start mit dem wssg wird zunächst einen Installation vorausgesetzt.
+Für den schnellen Start mit dem wssg wird zunächst eine Installation vorausgesetzt.
 
-Als erstes erzeugen wir uns eine neue Side. 
+Als erstes erzeugen wir uns eine neue Site. 
 
 `wssg init ./<sitename>`
 
-Jetzt wird automatisch ein Verzeichnis mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch wird direkt eine erste Seiten (index.md) mit erzeugt.
+Jetzt wird automatisch ein Verzeichnis mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch wird direkt die erste Seite (index.md) mit erzeugt.
 
 `wssg generate`  
 
-generiert nun die Website. Das Ergebnis landet automatisch m Ordner `.wssg/output`
+generiert nun die Website. Das Ergebnis landet automatisch im Ordner `.wssg/output`
+
+Wenn du den internen Webserver für den schnelleren Output verwenden möchtest, starte diesen mit folgendem Befehl:
+
+`wssg serve`
+
+ Jetzt wird zunächst die Webseite neu generiert und dann ein Webserver gestartet. Unter
+
+http://localhost:8080/ 
+
+kannst du dir das Ergebnis anschauen. Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Änderung wird automatisch vom `wssg` registriert und die Seiten entsprechend upgedated. Ein einfaches F5 im Browser reicht, um dir das Ergebnis deiner Änderungen anzuschauen. Änderungen im Ordner `.wssg` werden **nicht** automatisch berücksichtigt. Dazu muss auch eine Änderung an einer anderen Datei (außerhalb des `.wssg` Ordners) erfolgen. 
+
+Der Inhalt der `generate.yaml` wird nur beim Start des Server ausgewertet.
 
 # Aufbau
 
