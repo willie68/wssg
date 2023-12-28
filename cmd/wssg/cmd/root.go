@@ -17,7 +17,7 @@ var (
 		// Uncomment the following line if your bare application
 		// has an action associated with it:
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			logging.Root.SetLevel(logging.Fatal)
+			logging.Root.SetLevel(logging.Info)
 			if verbose {
 				logging.Root.SetLevel(logging.Debug)
 			}

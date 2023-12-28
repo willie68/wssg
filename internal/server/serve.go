@@ -106,6 +106,6 @@ func (s *Server) Serve() error {
 
 	fileServer := http.FileServer(http.Dir(s.output))
 	http.Handle("/", fileServer)
-	s.log.Info("start serving site. use http://localhost:8080/index.html")
+	s.log.Info("start serving site. use http://localhost:8080/index.html for the result. Stopping server with ctrl+c.")
 	return http.ListenAndServe(":8080", nil)
 }
