@@ -20,6 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Generator this the main generator engine
 type Generator struct {
 	rootFolder string
 	force      bool
@@ -31,18 +32,17 @@ type Generator struct {
 }
 
 type page struct {
-	Name     string         `json:"name" yaml:"name"`
-	Title    string         `json:"title" yaml:"title"`
-	filename string         `json:"filename" yaml:"filename"`
-	section  string         `json:"section" yaml:"section"`
-	Path     string         `json:"path" yaml:"path"`
-	cnf      config.General `json:"cnf" yaml:"cnf"`
-	URLPath  string         `json:"urlpath" yaml:"urlpath"`
-	Order    int            `json:"order" yaml:"order"`
+	Name     string `json:"name" yaml:"name"`
+	Title    string `json:"title" yaml:"title"`
+	Path     string `json:"path" yaml:"path"`
+	URLPath  string `json:"urlpath" yaml:"urlpath"`
+	Order    int    `json:"order" yaml:"order"`
+	filename string
+	section  string
+	cnf      config.General
 }
 
-var ()
-
+// New creates a new initialised generator
 func New(rootFolder string, force bool) Generator {
 	g := Generator{
 		rootFolder: rootFolder,
@@ -70,50 +70,57 @@ func (g *Generator) GenConfig() config.Generate {
 	return g.genConfig
 }
 
+// Execute walk thru the folders and register section/pages. After that processing each file.
 func (g *Generator) Execute() error {
 	g.init()
-	err := filepath.Walk(g.rootFolder,
-		func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if path == g.rootFolder {
-				return nil
-			}
-			name := info.Name()
-			if strings.HasPrefix(name, ".") {
-				return filepath.SkipDir
-			}
-			section := strings.ReplaceAll(path, "\\", "/")
-			sections := strings.Split(section, "/")
-			if info.IsDir() {
-				return nil
-			}
-			fmt.Println(path, info.Name(), info.Size())
-			section = strings.Join(sections[1:len(sections)-1], "/")
-			if g.isTemplate(name) {
-				err := g.registerPage(section, path, info)
-				if err != nil {
-					g.log.Errorf("error registering page: %v", err)
-				}
-			} else {
-				// copy as static file to output
-				err := g.copy2Output(section, path, info)
-				if err != nil {
-					g.log.Errorf("error copying file: %v", err)
-				}
-			}
-			return nil
-		})
+
+	err := g.prepare()
 	if err != nil {
-		g.log.Errorf("error preproccing site: %V", err)
+		g.log.Errorf("error prepare site: %V", err)
 		return err
 	}
+
 	for _, pg := range g.pages {
-		err = g.processPage(pg)
+		err := g.processPage(pg)
 		if err != nil {
 			g.log.Errorf("error processing site: %V", err)
 			return err
+		}
+	}
+	return nil
+}
+
+func (g *Generator) prepare() error {
+	return filepath.Walk(g.rootFolder, g.doWalk)
+}
+
+func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+	if path == g.rootFolder {
+		return nil
+	}
+	name := info.Name()
+	if strings.HasPrefix(name, ".") {
+		return filepath.SkipDir
+	}
+	section := strings.ReplaceAll(path, "\\", "/")
+	sections := strings.Split(section, "/")
+	if info.IsDir() {
+		return nil
+	}
+	section = strings.Join(sections[1:len(sections)-1], "/")
+	if g.isTemplate(name) {
+		err := g.registerPage(section, path, info)
+		if err != nil {
+			g.log.Errorf("error registering page: %v", err)
+		}
+	} else {
+		// copy as static file to output
+		err := g.copy2Output(section, path, info)
+		if err != nil {
+			g.log.Errorf("error copying file: %v", err)
 		}
 	}
 	return nil
