@@ -86,6 +86,8 @@ order: 10
 
 `order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. SO kann man später neue Seite bei 15, 25 usw. einfügen.
 
+Es können weitere Parameter angegeben werden, die von den jeweiligen Template definiert werden.  
+
 ## Variablen für eine Seite
 
 `{{.body}}` ergibt den konvertierten Text aus der Markdown Datei.
@@ -95,6 +97,8 @@ order: 10
 `{{.site.Language}}` ergibt die Sprache
 
 `{{.site.Title}}` den Webseitentitel. Ebenso funktionieren `{{.site.Description}}` und `{{.site.Keywords}}`
+
+Unter `{{.site.Userproperties}}` stehen alle unbekannten Parameter zur Verfügung. Diese können von dem HTML Template definiert werden. Als Beispiel dient der `font` Parameter. Will man also den in der Seitenkonfiguration angegeben Font verwenden, gelingt das mit `{{.site.UserProperties.font}}`. Diese Userproperties werden auch als Defaults für Bereiche- und Seitenkonfigurationen verwendet. 
 
 Für die aktuelle Seite sind folgende Variablen definiert:
 
