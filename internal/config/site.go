@@ -11,11 +11,12 @@ import (
 const SiteFile = "siteconfig.yaml"
 
 type Site struct {
-	BaseURL     string `yaml:"baseurl"`
-	Title       string `yaml:"title"`
-	Description string `yaml:"description"`
-	Keywords    string `yaml:"keywords"`
-	Language    string `yaml:"language"`
+	BaseURL        string `yaml:"baseurl"`
+	Title          string `yaml:"title"`
+	Description    string `yaml:"description"`
+	Keywords       string `yaml:"keywords"`
+	Language       string `yaml:"language"`
+	UserProperties General
 }
 
 var SiteDefault = Site{
@@ -54,7 +55,14 @@ func LoadSite(rootFolder string) Site {
 		log.Errorf("can't read site config: %v", err)
 		panic(1)
 	}
+	// Load main parts
 	err = yaml.Unmarshal(dt, &SiteConfig)
+	if err != nil {
+		log.Errorf("can't read site config: %v", err)
+		panic(1)
+	}
+	// Load user properties
+	err = yaml.Unmarshal(dt, &SiteConfig.UserProperties)
 	if err != nil {
 		log.Errorf("can't read site config: %v", err)
 		panic(1)

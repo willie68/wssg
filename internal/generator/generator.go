@@ -296,6 +296,10 @@ func (g *Generator) processPageCnf(pageCnf config.General, secCnf config.General
 	if err != nil {
 		return nil, err
 	}
+	err = mergo.Merge(&pageCnf, secCnf)
+	if err != nil {
+		return nil, err
+	}
 	return pageCnf, nil
 }
 
@@ -328,6 +332,10 @@ func (g *Generator) getSectionConfig(section string) config.General {
 		}
 	}
 	cnf["site"] = g.siteConfig
+	err := mergo.Merge(&cnf, g.siteConfig.UserProperties)
+	if err != nil {
+		g.log.Errorf("error merging section config with site config: %v", err)
+	}
 	g.sections[section] = cnf
 	return cnf
 }
