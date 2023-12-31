@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -32,6 +33,7 @@ func init() {
 	sectionCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
 }
 
+// CreateSection Creating a new section in the site, adding .wssg folder for config and an index.md for the first page
 func CreateSection(rootFolder string, args []string, force bool) error {
 	log := logging.New().WithName("newSection")
 	config.LoadSite(rootFolder)
@@ -39,14 +41,14 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 		return errors.New("missing section name")
 	}
 	name := args[0]
-	log.Infof("creating a new site in folder \"%s\" with name: %s", rootFolder, name)
+	log.Infof("creating a new section in folder \"%s\" with name: %s", rootFolder, name)
 	sectionFolder := filepath.Join(rootFolder, name)
 	ok, err := utils.FileExists(sectionFolder)
 	if err != nil {
 		return err
 	}
 	if ok && !force {
-		return errors.New("site already exists")
+		return errors.New("section already exists")
 	}
 	err = os.MkdirAll(sectionFolder, 755)
 	if err != nil {
@@ -66,5 +68,8 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	}.General()
 	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
 	err = utils.WriteAsYaml(sectionConfigFile, sectionDefault)
-	return err
+	if err != nil {
+		return err
+	}
+	return CreatePage(rootFolder, fmt.Sprintf("%s/index", name), force)
 }

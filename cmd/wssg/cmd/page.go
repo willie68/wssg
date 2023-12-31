@@ -32,7 +32,11 @@ var (
 		It automatically generates a new md file with an example config.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			force, _ := cmd.Flags().GetBool("force")
-			return CreatePage(rootFolder, args, force)
+			name := ""
+			if len(args) > 0 {
+				name = args[0]
+			}
+			return CreatePage(rootFolder, name, force)
 		},
 	}
 )
@@ -42,13 +46,13 @@ func init() {
 	pageCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
 }
 
-func CreatePage(rootFolder string, args []string, force bool) error {
+// CreatePage creates a new page in the site. Name should be prefixed with sections like gallerie/index
+func CreatePage(rootFolder string, name string, force bool) error {
 	log := logging.New().WithName("newPage")
 	config.LoadSite(rootFolder)
 	sections := make([]string, 0)
-	name := "index"
-	if len(args) > 0 {
-		name = args[0]
+	if name == "" {
+		name = "index"
 	}
 
 	if strings.Contains(name, "/") {
@@ -102,7 +106,7 @@ func CreatePage(rootFolder string, args []string, force bool) error {
 
 func buildPageDefault(name string) (cnf config.General, err error) {
 	cnf = make(config.General)
-	err = mergo.Merge(&cnf, config.SiteConfig)
+	err = mergo.Merge(&cnf, config.SiteConfig.General())
 	if err != nil {
 		return nil, err
 	}

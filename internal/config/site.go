@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"dario.cat/mergo"
+	"github.com/willie68/wssg/internal/logging"
 	"gopkg.in/yaml.v3"
 )
 
@@ -69,4 +70,19 @@ func LoadSite(rootFolder string) Site {
 	}
 	siteLoaded = true
 	return SiteConfig
+}
+
+func (s *Site) General() (output General) {
+	log := logging.New().WithName("siteconfig")
+	output = make(General)
+	output["baseurl"] = s.BaseURL
+	output["title"] = s.Title
+	output["description"] = s.Description
+	output["keywords"] = s.Keywords
+	output["language"] = s.Language
+	err := mergo.Merge(&output, s.UserProperties)
+	if err != nil {
+		log.Errorf("error merging user properties: %v", err)
+	}
+	return
 }

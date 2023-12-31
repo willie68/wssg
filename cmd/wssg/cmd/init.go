@@ -109,5 +109,5 @@ func initConfig(rootFolder string) error {
 }
 
 func addIndexPage(rootFolder string) error {
-	return CreatePage(rootFolder, []string{"index"}, true)
+	return CreatePage(rootFolder, "index", true)
 }

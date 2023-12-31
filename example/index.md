@@ -4,6 +4,7 @@ processor: internal
 title: 'Index'
 order: 10
 ---
-This is a new page with the title {{.title}} {{.name}}
+Design Sauber macht Werbung für alles und jeden.
+
 
 ![licht](licht.jpg)

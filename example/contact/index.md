@@ -1,6 +1,9 @@
 ---
 name: 'index'
 processor: internal
-title: 'index'
+title: 'Kontakt'
 ---
-This is a new page with the title {{.pagetitle}}
+{{.title}}
+
+Sie wollen Kontakt aufnehmen:
+
