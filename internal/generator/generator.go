@@ -211,6 +211,7 @@ func (g *Generator) processPage(pg page) error {
 	pg.cnf["site"] = g.siteConfig
 	pages := g.filterSortPages(pg.section)
 	pg.cnf["pages"] = pages
+	pg.cnf["sections"] = g.filterSortSections()
 
 	// load html layout
 	//TODO layout.html should be in the site config
@@ -236,6 +237,7 @@ func (g *Generator) processPage(pg page) error {
 	return err
 }
 
+// filterSortPages getting all pages, filtering the actual and unvisible pages, than sorting in index order
 func (g *Generator) filterSortPages(sec string) []page {
 	ps := make([]page, 0)
 	for _, pg := range g.pages {
@@ -248,6 +250,22 @@ func (g *Generator) filterSortPages(sec string) []page {
 		return ps[i].Order < ps[j].Order
 	})
 	return ps
+}
+
+// filterSortSections getting all section names, filter actual, root and unvisible sections, sorting in index order
+func (g *Generator) filterSortSections() []config.Section {
+	sl := make([]config.Section, 0)
+	for key, sec := range g.sections {
+		if !strings.HasPrefix(key, "_") {
+			sc := config.G2Section(sec)
+			sl = append(sl, sc)
+		}
+	}
+	sort.Slice(sl, func(i, j int) bool {
+		// less function
+		return sl[i].Name < sl[j].Name
+	})
+	return sl
 }
 
 func (g *Generator) mergeHTML(layout string, cnf config.General) ([]byte, error) {

@@ -25,6 +25,11 @@
     <div style="float: right; bottom: 0px;margin-right: 8px;">
       <div style="bottom:0px;">
         <p style="font-family: {{.site.UserProperties.font}};font-size:36px;">
+          {{range .sections}} <a href="Hier fehlt was">{{.Title}}</a> {{end}}
+        </p>
+      </div>
+      <div style="bottom:0px;">
+        <p style="font-family: {{.site.UserProperties.font}};font-size:36px;">
           {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
         </p>
       </div>

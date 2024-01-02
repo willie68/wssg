@@ -1,6 +1,6 @@
 ---
 name: 'index'
-processor: internal
+processor: contact
 title: 'Kontakt'
 ---
 {{.title}}
