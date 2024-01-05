@@ -1,6 +1,10 @@
 package config
 
-import "dario.cat/mergo"
+import (
+	"fmt"
+
+	"dario.cat/mergo"
+)
 
 const (
 	// SectionFileName name of the section file
@@ -15,6 +19,7 @@ type Section struct {
 	Name           string `yaml:"name"`
 	Title          string `yaml:"title"`
 	Processor      string `yaml:"processor"`
+	URLPath        string
 	UserProperties General
 }
 
@@ -55,6 +60,7 @@ func G2Section(g General) Section {
 		Name:           g["name"].(string),
 		Title:          g["title"].(string),
 		Processor:      g["processor"].(string),
+		URLPath:        fmt.Sprintf("/%s", g["name"].(string)),
 		UserProperties: up,
 	}
 }
