@@ -15,6 +15,7 @@ var (
 	keyNames = []string{"name", "title", "processor"}
 )
 
+// Section the configuration of a section
 type Section struct {
 	Name           string `yaml:"name"`
 	Title          string `yaml:"title"`
@@ -23,6 +24,7 @@ type Section struct {
 	UserProperties General
 }
 
+// SectionDefault the default configuration of a section, used for creating a new one
 var SectionDefault = Section{
 	Name:      "{{.name}}",
 	Title:     "{{.name}}",

@@ -25,6 +25,7 @@ func init() {
 	generateCmd.Flags().BoolP("force", "f", false, "force build. Unchanged page content will be overwritten.")
 }
 
+// Generate creates a new generator and generate the whole site
 func Generate(rootFolder string, force bool) error {
 	gen := generator.New(rootFolder, force)
 	return gen.Execute()

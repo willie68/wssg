@@ -1,5 +1,6 @@
 package config
 
+// Page the configuration of a single page, used by frontmatter
 type Page struct {
 	Title     string `yaml:"title"`
 	Name      string `yaml:"name"`
@@ -7,6 +8,7 @@ type Page struct {
 }
 
 var (
+	// PageDefault the page default config
 	PageDefault = Page{
 		Title:     "{{.name}}",
 		Name:      "{{.name}}",
@@ -14,6 +16,7 @@ var (
 	}
 )
 
+// General converting the page sturct into a general
 func (p Page) General() (output General) {
 	output = make(General)
 	output["title"] = p.Title

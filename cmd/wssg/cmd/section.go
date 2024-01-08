@@ -72,5 +72,5 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	if err != nil {
 		return err
 	}
-	return CreatePage(rootFolder, fmt.Sprintf("%s/index", name), force)
+	return CreatePage(rootFolder, fmt.Sprintf("%s/index", name), config.ProcInternal, force)
 }

@@ -8,16 +8,20 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// GenerateFile the file name of the generator config
 const GenerateFile = "generate.yaml"
 
+// Generate the configuration for the generator
 type Generate struct {
 	Output string `yaml:"output"`
 }
 
 var (
+	// GenDefault the default generator config
 	GenDefault = Generate{
 		Output: fmt.Sprintf("./%s/output", WssgFolder),
 	}
+	// GenConfig the actual generator config
 	GenConfig Generate
 	genLoded  bool
 )
@@ -26,6 +30,7 @@ func init() {
 	GenConfig = GenDefault
 }
 
+// LoadGenConfig loading the generator config from the site
 func LoadGenConfig(rootFolder string) Generate {
 	if genLoded {
 		return GenConfig

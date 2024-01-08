@@ -1,6 +1,6 @@
 ---
 name: 'index'
-processor: gallery
+processor: 'gallery'
 title: 'index'
 ---
-This is a new page with the title {{.title}} {{ if .section }} in section {{.section.title}} {{ end }}
+This is a new gallery page with the title {{.title}}

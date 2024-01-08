@@ -19,6 +19,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/plugins/gallery"
 	"github.com/willie68/wssg/internal/utils"
 	"github.com/willie68/wssg/templates"
 )
@@ -32,11 +33,12 @@ var (
 		It automatically generates a new md file with an example config.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			force, _ := cmd.Flags().GetBool("force")
+			plugin, _ := cmd.Flags().GetString("plugin")
 			name := ""
 			if len(args) > 0 {
 				name = args[0]
 			}
-			return CreatePage(rootFolder, name, force)
+			return CreatePage(rootFolder, name, plugin, force)
 		},
 	}
 )
@@ -44,10 +46,11 @@ var (
 func init() {
 	newCmd.AddCommand(pageCmd)
 	pageCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
+	pageCmd.Flags().StringP("plugin", "p", "internal", "new page with this plugin. Default is internal.")
 }
 
 // CreatePage creates a new page in the site. Name should be prefixed with sections like gallerie/index
-func CreatePage(rootFolder string, name string, force bool) error {
+func CreatePage(rootFolder string, name string, plugin string, force bool) error {
 	log := logging.New().WithName("newPage")
 	config.LoadSite(rootFolder)
 	sections := make([]string, 0)
@@ -69,14 +72,31 @@ func CreatePage(rootFolder string, name string, force bool) error {
 	if ok && !force {
 		return errors.New("page already exists")
 	}
-	pageGenerateConfig, err := buildPageDefault(name)
+	pageGenerateConfig, err := buildPageDefault(name, plugin)
 	if err != nil {
 		return err
 	}
 
 	// Front matters extract page config
 	var pageConfig config.General
-	rest, err := frontmatter.Parse(strings.NewReader(templates.PageMD), &pageConfig)
+	pageTemplate := templates.PageMD
+	if gallery.PluginName == plugin {
+		pageTemplate = templates.GalleryPage
+		if err != nil {
+			return err
+		}
+
+		siteConfigDir := filepath.Join(rootFolder, config.WssgFolder)
+		layoutHTMLFile := filepath.Join(siteConfigDir, "gallery.html")
+		if ok, _ := utils.FileExists(layoutHTMLFile); !ok {
+			err = os.WriteFile(layoutHTMLFile, []byte(templates.GalleryHTML), 755)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	rest, err := frontmatter.Parse(strings.NewReader(pageTemplate), &pageConfig)
 	if err != nil {
 		return err
 	}
@@ -104,12 +124,13 @@ func CreatePage(rootFolder string, name string, force bool) error {
 	return os.WriteFile(pageFile, []byte(fmt.Sprintf("---\n%s---\n%s", page.String(), rest)), 0775)
 }
 
-func buildPageDefault(name string) (cnf config.General, err error) {
+func buildPageDefault(name, processor string) (cnf config.General, err error) {
 	cnf = make(config.General)
 	err = mergo.Merge(&cnf, config.SiteConfig.General())
 	if err != nil {
 		return nil, err
 	}
 	cnf["pagename"] = name
+	cnf["processor"] = processor
 	return cnf, nil
 }

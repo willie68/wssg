@@ -9,8 +9,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// SiteFile the default filename of the site config file
 const SiteFile = "siteconfig.yaml"
 
+// Site the configuration struct of the site
 type Site struct {
 	BaseURL        string `yaml:"baseurl"`
 	Title          string `yaml:"title"`
@@ -20,6 +22,7 @@ type Site struct {
 	UserProperties General
 }
 
+// SiteDefault the default of the site configuration
 var SiteDefault = Site{
 	BaseURL:     "example.com",
 	Title:       "example",
@@ -29,7 +32,7 @@ var SiteDefault = Site{
 }
 
 var (
-	// SiteConfig this is the main configuration for this site
+	// SiteConfig this is the actual main configuration for this site
 	SiteConfig Site
 	siteLoaded bool
 )
@@ -72,6 +75,7 @@ func LoadSite(rootFolder string) Site {
 	return SiteConfig
 }
 
+// General converting this site config into a general map
 func (s *Site) General() (output General) {
 	log := logging.New().WithName("siteconfig")
 	output = make(General)

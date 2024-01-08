@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	// CmdVersion holding all version information
 	CmdVersion config.Version
 
 	// versionCmd represents the version command

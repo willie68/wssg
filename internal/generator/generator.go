@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	RootSection = "_root"
+	rootSection = "_root"
 )
 
 // Generator this the main generator engine
@@ -183,7 +183,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 }
 
 func (g *Generator) pageURLPath(pg *model.Page) *model.Page {
-	if pg.Section == "" || pg.Section == RootSection {
+	if pg.Section == "" || pg.Section == rootSection {
 		pg.URLPath = fmt.Sprintf("%s.html", pg.Name)
 		return pg
 	}
@@ -354,7 +354,7 @@ func (g *Generator) getSectionConfig(section string) config.General {
 	sections := strings.Split(section, "/")
 	sectionFile := filepath.Join(g.rootFolder, filepath.Join(sections...), config.WssgFolder, config.SectionFileName)
 	if section == "" {
-		section = RootSection
+		section = rootSection
 	}
 	if ok, _ := utils.FileExists(sectionFile); ok {
 		err := utils.LoadYAML(sectionFile, &cnf)

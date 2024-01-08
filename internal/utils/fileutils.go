@@ -8,6 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// FileExists checking if a file exists
 func FileExists(name string) (bool, error) {
 	if _, err := os.Stat(name); err != nil {
 		if os.IsNotExist(err) {
@@ -18,6 +19,7 @@ func FileExists(name string) (bool, error) {
 	return true, nil
 }
 
+// WriteAsYaml writing a any struct as yaml
 func WriteAsYaml(file string, v any) error {
 	dt, err := yaml.Marshal(v)
 	if err != nil {
@@ -27,6 +29,7 @@ func WriteAsYaml(file string, v any) error {
 	return err
 }
 
+// LoadYAML loading a file, yaml unmarshal into a any struct
 func LoadYAML(file string, v any) error {
 	if ok, _ := FileExists(file); !ok {
 		return fmt.Errorf("file not found: %s", file)
@@ -39,6 +42,7 @@ func LoadYAML(file string, v any) error {
 	return err
 }
 
+// FileCopy convinient method for copy a file
 func FileCopy(src, dst string) (int64, error) {
 	sourceFileStat, err := os.Stat(src)
 	if err != nil {

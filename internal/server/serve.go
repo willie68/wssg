@@ -19,6 +19,7 @@ type Server struct {
 	gen        generator.Generator
 	output     string
 	watcher    *fsnotify.Watcher
+	sy         sync.Mutex
 }
 
 // New creates a new http server with auto update capatibilities
@@ -66,7 +67,6 @@ func (s *Server) StartWatcher() error {
 }
 
 func (s *Server) doEvent() {
-	var sy sync.Mutex
 	for {
 		select {
 		case event, ok := <-s.watcher.Events:
@@ -79,13 +79,7 @@ func (s *Server) doEvent() {
 			}
 			s.log.Infof("event: %v, file: %s", event, fn)
 			if event.Has(fsnotify.Write) {
-				sy.Lock()
-				s.log.Infof("modified file: %s", event.Name)
-				err := s.gen.Execute()
-				if err != nil {
-					s.log.Errorf("error generate site: %v", err)
-				}
-				sy.Unlock()
+				s.generate(event.Name)
 			}
 		case err, ok := <-s.watcher.Errors:
 			if !ok {
@@ -94,6 +88,16 @@ func (s *Server) doEvent() {
 			s.log.Errorf("error: %v", err)
 		}
 	}
+}
+
+func (s *Server) generate(name string) {
+	s.sy.Lock()
+	s.log.Infof("modified file: %s", name)
+	err := s.gen.Execute()
+	if err != nil {
+		s.log.Errorf("error generate site: %v", err)
+	}
+	s.sy.Unlock()
 }
 
 // Serve starting the http server serving the files
