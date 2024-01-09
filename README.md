@@ -86,7 +86,7 @@ order: 10
 
 `order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. SO kann man später neue Seite bei 15, 25 usw. einfügen.
 
-Es können weitere Parameter angegeben werden, die von den jeweiligen Template definiert werden.  
+Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Prozessor definiert werden.  
 
 ## Variablen für eine Seite
 
@@ -120,5 +120,47 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 `{{.Title}}` der Titel der Seite
 
+# Plugins
 
+## internal
 
+Internal ist ein Plugin oder besser Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
+
+## plain
+
+Beim plain Plugin wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden vorgenommen, die Seite aber nicht weiter verarbeitet. Dieses Plugin ist als Default gesetzt.
+
+## gallery
+
+Wird ein Prozessor gallery gesetzt, wird eine Bildgallery generiert. Folgende Frontmatter Parameter werden zusätzlich verwendet:
+
+```yaml
+---
+name: 'index'
+processor: 'gallery'
+title: 'index'
+images: 'images'
+thumbswidth: 200
+imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:250px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>size: {{`{{.size}}`}}</p></a></div>'
+---
+```
+
+`images`: gibt das Verzeichnis an, wo die zu verabeitenden Bilddaten liegen. Es kann nur ein Ordfner angegeben werden. Alle Bilddaten darin werden dann verarbeitet. Als Bilder werden Dateien mit folgenden Endungen betrachtet: `*.jpeg, *.jpg, *.bmp, *.png` 
+
+`thumbswidth`: ist die Breite der Thumbs, die von dem Plugin automatisch generiert werden.
+
+`imageentry`: Hier steht das HTML Template, welches ein einzelnes Bild darstellt. Bitte beachte: für jedes Bild wird dieses Template einmal generiert. Dabei werden auch wieder die typischen Ersetzungen gemacht. {{.title}} würde also auch hier den Seitentitel einfügen. Um auf die Eigenschaften der Datei zugreifen zu können, müssen diese zus. gekennzeichnet werden. Dazu dient der folgende Ausdruck:
+
+```
+{{`{{.<keyname>}}`}}
+```
+
+keyname kann folgende Eigenschaften verwenden
+
+`.source`: ergibt den relativen Pfad/Namen der Quelldatei (inkl. Unterordner)
+`.thumbnail`: ergibt den relativen Pfad/Namen der Thumbnaildatei (inkl. Unterordner)
+`.name`: ergibt den Dateinamen ohne Pfad und Endung
+`.size`: ist die vom Menschen lesbare Dateigröße: 10KiB oder 12MiB...
+`.sizebytes`: ist die Dateigröße in Bytes
+
+Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei eingefügt.
