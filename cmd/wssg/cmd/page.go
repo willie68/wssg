@@ -64,7 +64,8 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 		sections = sections[:len(sections)-1]
 	}
 	log.Infof("creating a new page in section \"%v\" with name: %s", sections, name)
-	pageFile := filepath.Join(rootFolder, filepath.Join(sections...), fmt.Sprintf("%s.md", name))
+	pageFolder := filepath.Join(rootFolder, filepath.Join(sections...))
+	pageFile := filepath.Join(pageFolder, fmt.Sprintf("%s.md", name))
 	ok, err := utils.FileExists(pageFile)
 	if err != nil {
 		return err
@@ -99,6 +100,18 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	rest, err := frontmatter.Parse(strings.NewReader(pageTemplate), &pageConfig)
 	if err != nil {
 		return err
+	}
+
+	if gallery.PluginName == plugin {
+		images, ok := pageConfig["images"].(string)
+		if !ok {
+			return fmt.Errorf("gallery template broken: %v", err)
+		}
+		images = filepath.Join(pageFolder, images)
+		err = os.MkdirAll(images, os.ModePerm)
+		if err != nil {
+			return err
+		}
 	}
 	// process config
 	err = mergo.Merge(&pageConfig, config.PageDefault.General())
