@@ -15,6 +15,11 @@ func New() plugins.Plugin {
 }
 
 // CreateBody interface method to create a html body from a markdown file
-func (m *Plain) CreateBody(content []byte, _ model.Page) ([]byte, error) {
+func (p *Plain) CreateBody(content []byte, _ model.Page) ([]byte, error) {
 	return content, nil
+}
+
+// HTMLTemplateName returning the used html template
+func (p *Plain) HTMLTemplateName() string {
+	return "layout.html"
 }

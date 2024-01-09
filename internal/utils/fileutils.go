@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -66,4 +68,8 @@ func FileCopy(src, dst string) (int64, error) {
 	defer destination.Close()
 	nBytes, err := io.Copy(destination, source)
 	return nBytes, err
+}
+
+func FileNameWOExt(fileName string) string {
+	return strings.TrimSuffix(fileName, filepath.Ext(fileName))
 }

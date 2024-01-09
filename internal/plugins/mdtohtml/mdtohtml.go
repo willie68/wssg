@@ -34,6 +34,11 @@ func (m *Md2HTML) CreateBody(content []byte, _ model.Page) ([]byte, error) {
 	return ht, nil
 }
 
+// HTMLTemplateName returning the used html template
+func (m *Md2HTML) HTMLTemplateName() string {
+	return "layout.html"
+}
+
 func mdToHTML(md []byte) []byte {
 	// create markdown parser with extensions
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock

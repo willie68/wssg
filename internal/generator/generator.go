@@ -15,6 +15,7 @@ import (
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
 	"github.com/willie68/wssg/internal/plugins"
+	"github.com/willie68/wssg/internal/plugins/gallery"
 	"github.com/willie68/wssg/internal/plugins/mdtohtml"
 	"github.com/willie68/wssg/internal/plugins/plain"
 	"github.com/willie68/wssg/internal/utils"
@@ -108,7 +109,7 @@ func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
 	if g.isTemplate(name) {
 		err := g.registerPage(section, path, info)
 		if err != nil {
-			g.log.Errorf("error registering page: %v", err)
+			g.log.Errorf("error registering page \"%s/%s\": %v", section, name, err)
 		}
 	} else {
 		// copy as static file to output
@@ -167,15 +168,20 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if !ok {
 		order = 0
 	}
+	srcFolder := filepath.Dir(path)
+	sections := strings.Split(section, "/")
+	dstFolder := filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
 	pg := &model.Page{
-		Name:      pageCnf["name"].(string),
-		Title:     pageCnf["title"].(string),
-		Filename:  info.Name(),
-		Section:   section,
-		Path:      path,
-		Cnf:       pageCnf,
-		Order:     order,
-		Processor: pageCnf["processor"].(string),
+		Name:         pageCnf["name"].(string),
+		Title:        pageCnf["title"].(string),
+		Filename:     info.Name(),
+		Section:      section,
+		Path:         path,
+		Cnf:          pageCnf,
+		Order:        order,
+		Processor:    pageCnf["processor"].(string),
+		SourceFolder: srcFolder,
+		DestFolder:   dstFolder,
 	}
 	pg = g.pageURLPath(pg)
 	g.pages = append(g.pages, *pg)
@@ -203,6 +209,7 @@ func (g *Generator) processPage(pg model.Page) error {
 	pages := g.filterSortPages(pg.Section)
 	pg.Cnf["pages"] = pages
 	pg.Cnf["sections"] = g.filterSortSections()
+	pg.Cnf["generator"] = g.genConfig
 
 	// load file
 	dt, err := os.ReadFile(pg.Path)
@@ -212,7 +219,9 @@ func (g *Generator) processPage(pg model.Page) error {
 	var processor plugins.Plugin
 
 	switch pg.Processor {
-	case "internal":
+	case gallery.PluginName:
+		processor = gallery.New(pg.Cnf)
+	case config.ProcInternal:
 		processor = mdtohtml.New()
 	default:
 		processor = plain.New()
@@ -228,7 +237,7 @@ func (g *Generator) processPage(pg model.Page) error {
 
 	// load html layout
 	//TODO layout.html should be in the site config
-	layFile := filepath.Join(g.rootFolder, config.WssgFolder, "layout.html")
+	layFile := filepath.Join(g.rootFolder, config.WssgFolder, processor.HTMLTemplateName())
 	layout, err := os.ReadFile(layFile)
 	if err != nil {
 		return err
