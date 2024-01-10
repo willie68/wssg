@@ -63,8 +63,16 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 		name = sections[len(sections)-1]
 		sections = sections[:len(sections)-1]
 	}
+
 	log.Infof("creating a new page in section \"%v\" with name: %s", sections, name)
 	pageFolder := filepath.Join(rootFolder, filepath.Join(sections...))
+	if len(sections) > 0 {
+		ok := checkSection(pageFolder)
+		if !ok {
+			return errors.New("new page can only be created in a already created section. Please create a new section before trying to create a new page. \r\n Example: wssg new section <name>")
+		}
+	}
+
 	pageFile := filepath.Join(pageFolder, fmt.Sprintf("%s.md", name))
 	ok, err := utils.FileExists(pageFile)
 	if err != nil {
@@ -146,4 +154,23 @@ func buildPageDefault(name, processor string) (cnf config.General, err error) {
 	cnf["pagename"] = name
 	cnf["processor"] = processor
 	return cnf, nil
+}
+
+func checkSection(sectionFolder string) bool {
+	ok, _ := utils.FileExists(sectionFolder)
+	if !ok {
+		return false
+	}
+	// create config folder
+	configFolder := filepath.Join(sectionFolder, config.WssgFolder)
+	ok, _ = utils.FileExists(configFolder)
+	if !ok {
+		return false
+	}
+	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
+	ok, _ = utils.FileExists(sectionConfigFile)
+	if !ok {
+		return false
+	}
+	return true
 }

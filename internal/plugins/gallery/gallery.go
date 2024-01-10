@@ -13,6 +13,8 @@ import (
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
+	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rwcarlsen/goexif/tiff"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
@@ -170,10 +172,28 @@ func (g *Gallery) HTMLTemplateName() string {
 
 func (g *Gallery) creatThumb(fld string, i img, width int) error {
 	g.log.Debugf("generating thumb: %s", i.Name)
+	dst := filepath.Join(fld, i.Thumbnail)
+	ok, _ := utils.FileExists(dst)
+	if ok {
+		return nil
+	}
 	src := filepath.Join(fld, i.Source)
+
 	img, err := imgio.Open(src)
 	if err != nil {
 		return err
+	}
+	ori, err := orientation(src)
+	if err != nil {
+		return err
+	}
+	switch ori {
+	case 3: // rotate 180
+		img = transform.Rotate(img, 180.0, nil)
+	case 6: // rotate 90
+		img = transform.Rotate(img, 90.0, nil)
+	case 8: // rotate 270
+		img = transform.Rotate(img, 270.0, nil)
 	}
 	var rect image.Rectangle
 	bd := img.Bounds()
@@ -188,7 +208,32 @@ func (g *Gallery) creatThumb(fld string, i img, width int) error {
 
 	thb := transform.Resize(img, width, width, transform.NearestNeighbor)
 
-	dst := filepath.Join(fld, i.Thumbnail)
 	err = imgio.Save(dst, thb, imgio.PNGEncoder())
 	return err
+}
+
+func orientation(filename string) (int, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return -1, err
+	}
+	defer f.Close()
+
+	x, err := exif.Decode(f)
+	if err != nil {
+		return 0, nil
+	}
+
+	tag, err := x.Get(exif.Orientation)
+	if err != nil {
+		return 0, nil
+	}
+	if tag.Count == 1 && tag.Format() == tiff.IntVal {
+		orientation, err := tag.Int(0)
+		if err != nil {
+			return 0, nil
+		}
+		return orientation, nil
+	}
+	return 0, nil
 }
