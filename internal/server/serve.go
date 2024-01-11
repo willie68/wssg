@@ -77,6 +77,9 @@ func (s *Server) doEvent() {
 			if strings.HasPrefix(fn, ".") {
 				continue
 			}
+			if strings.HasPrefix(fn, "_") {
+				continue
+			}
 			s.log.Infof("event: %v, file: %s", event, fn)
 			if event.Has(fsnotify.Write) {
 				s.generate(event.Name)

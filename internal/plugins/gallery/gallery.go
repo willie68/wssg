@@ -21,6 +21,7 @@ import (
 	"github.com/willie68/wssg/internal/plugins"
 	"github.com/willie68/wssg/internal/plugins/mdtohtml"
 	"github.com/willie68/wssg/internal/utils"
+	"gopkg.in/yaml.v3"
 )
 
 // PluginName name of this plugin
@@ -39,10 +40,11 @@ type Gallery struct {
 }
 
 type img struct {
-	Name      string
-	Source    string
-	Thumbnail string
-	Size      int64
+	Name           string
+	Source         string
+	Thumbnail      string
+	Size           int64
+	UserProperties map[string]string
 }
 
 // New creating a new gallery processor
@@ -63,42 +65,24 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 	if !filepath.IsAbs(imgFolder) {
 		imgFolder = filepath.Join(pg.SourceFolder, imgFolder)
 	}
-	imgs, err := os.ReadDir(imgFolder)
+	imgProps := pg.Cnf["imgproperties"]
+	props := utils.ConvertArrIntToArrString(imgProps)
+	images, err := g.prepareImageList(imgFolder, props)
 	if err != nil {
 		return nil, err
 	}
+
 	dstFolder := filepath.Join(pg.DestFolder, "images")
 	err = os.MkdirAll(dstFolder, os.ModePerm)
 	if err != nil {
 		return nil, err
 	}
 
-	images := make([]img, 0)
-	for _, de := range imgs {
-		if slices.Contains(exts, filepath.Ext(de.Name())) {
-			name := utils.FileNameWOExt(de.Name())
-			thb := fmt.Sprintf("%s_thb.png", name)
-			info, err := de.Info()
-			if err != nil {
-				g.log.Errorf("can't get file info of %s: %v", de.Name(), err)
-			}
-			size := int64(0)
-			if info != nil {
-				size = info.Size()
-			}
-			i := img{
-				Name:      de.Name(),
-				Source:    de.Name(),
-				Thumbnail: thb,
-				Size:      size,
-			}
-			images = append(images, i)
-			// copy to output folder
-			err = g.ensureCopy(imgFolder, dstFolder, de.Name())
-			if err != nil {
-				return nil, err
-			}
-
+	for _, de := range images {
+		// copy to output folder
+		err = g.ensureCopy(imgFolder, dstFolder, de.Name)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -138,6 +122,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 		m["thumbnail"] = fmt.Sprintf("images/%s", i.Thumbnail)
 		m["sizebytes"] = fmt.Sprintf("%d", i.Size)
 		m["size"] = utils.ByteCountBinary(i.Size)
+		for k, v := range i.UserProperties {
+			m[k] = v
+		}
 
 		var bb bytes.Buffer
 		err = tpl.Execute(&bb, m)
@@ -150,6 +137,98 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 
 	// extract md
 	return mdtohtml.New().CreateBody(content, pg)
+}
+
+func (g *Gallery) prepareImageList(imgFolder string, props []string) ([]img, error) {
+	imageDescriptions, err := g.readImageDescription(imgFolder)
+	if err != nil {
+		return nil, err
+	}
+	imgs, err := os.ReadDir(imgFolder)
+	if err != nil {
+		return nil, err
+	}
+	images := make([]img, 0)
+	for _, de := range imgs {
+		if !slices.Contains(exts, filepath.Ext(de.Name())) {
+			continue
+		}
+		name := utils.FileNameWOExt(de.Name())
+		thb := fmt.Sprintf("%s_thb.png", name)
+		info, err := de.Info()
+		if err != nil {
+			g.log.Errorf("can't get file info of %s: %v", de.Name(), err)
+		}
+		size := int64(0)
+		if info != nil {
+			size = info.Size()
+		}
+		i := img{
+			Name:           de.Name(),
+			Source:         de.Name(),
+			Thumbnail:      thb,
+			Size:           size,
+			UserProperties: getUserproperties(props, imageDescriptions, name),
+		}
+		images = append(images, i)
+	}
+	if len(props) > 0 {
+		err = g.writeImageDescription(imgFolder, imageDescriptions)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return images, nil
+}
+
+func getUserproperties(props []string, imageDescriptions config.General, name string) map[string]string {
+	var up map[string]string
+	if len(props) > 0 {
+		u := imageDescriptions[name]
+		if u == nil {
+			up = make(map[string]string)
+		} else {
+			up = utils.ConvertMapIntToMapString(u)
+		}
+		for _, k := range props {
+			_, ok := up[k]
+			if !ok {
+				up[k] = k
+			}
+		}
+		imageDescriptions[name] = up
+	}
+	return up
+}
+
+func (g *Gallery) writeImageDescription(imgFolder string, descs config.General) error {
+	imgDescription := getImageDescriptionFile(imgFolder)
+	ya, err := yaml.Marshal(descs)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile(imgDescription, ya, 0666)
+	return err
+}
+
+func (g *Gallery) readImageDescription(imgFolder string) (config.General, error) {
+	descs := make(config.General)
+
+	imgDescription := getImageDescriptionFile(imgFolder)
+	if ok, _ := utils.FileExists(imgDescription); ok {
+		rd, err := os.ReadFile(imgDescription)
+		if err == nil {
+			err := yaml.Unmarshal(rd, &descs)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	return descs, nil
+}
+
+func getImageDescriptionFile(imgFolder string) string {
+	return filepath.Join(imgFolder, "_content.yaml")
 }
 
 func (g *Gallery) ensureCopy(imgFolder, dstFolder, name string) error {
