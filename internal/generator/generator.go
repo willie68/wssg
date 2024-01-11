@@ -153,9 +153,14 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	}
 	// process pageCnf
 	defaults := make(config.General)
-	defaults["name"] = strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+	name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
+	title := name
+	if title == "index" {
+		title = secCnf["title"].(string)
+	}
+	defaults["name"] = name
 	defaults["processor"] = proc
-	defaults["title"] = defaults["name"]
+	defaults["title"] = title
 	err = mergo.Merge(&pageCnf, defaults)
 	if err != nil {
 		return err
