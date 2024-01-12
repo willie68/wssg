@@ -1,7 +1,7 @@
 ---
 name: 'index'
 processor: internal
-title: 'Index'
+title: 'Willkommen'
 order: 10
 ---
 Design Sauber macht Werbung für alles und jeden.

@@ -1,7 +1,7 @@
 ---
 name: 'index'
 processor: 'gallery'
-title: 'index'
+title: 'Gallerie'
 images: 'images'
 thumbswidth: 200
 imgproperties: 

@@ -67,14 +67,16 @@ func (g *Generator) GenConfig() config.Generate {
 
 // Execute walk thru the folders and register section/pages. After that processing each file.
 func (g *Generator) Execute() error {
+	g.log.Debug("init")
 	g.init()
-
+	g.log.Debug("prepare")
 	err := g.prepare()
 	if err != nil {
 		g.log.Errorf("error prepare site: %V", err)
 		return err
 	}
 
+	g.log.Debugf("process pages: %d", len(g.pages))
 	for _, pg := range g.pages {
 		err := g.processPage(pg)
 		if err != nil {
@@ -82,6 +84,7 @@ func (g *Generator) Execute() error {
 			return err
 		}
 	}
+	g.log.Debug("finished")
 	return nil
 }
 
@@ -93,12 +96,21 @@ func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
 	if err != nil {
 		return err
 	}
-	if path == g.rootFolder {
+	name := ""
+	if info != nil {
+		name = info.Name()
+	}
+	g.log.Debugf("walk: %s", path)
+	if path == g.rootFolder || name == "" {
 		return nil
 	}
-	name := info.Name()
-	if strings.HasPrefix(name, ".") {
+	// skip directories with . prefix
+	if strings.HasPrefix(name, ".") && info.IsDir() {
 		return filepath.SkipDir
+	}
+	// skip files with . and _ prefix
+	if strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") {
+		return nil
 	}
 	section := strings.ReplaceAll(path, "\\", "/")
 	sections := strings.Split(section, "/")
@@ -133,9 +145,9 @@ func (g *Generator) isTemplate(name string) bool {
 
 // registerPage this will only process the page config and cache information about the page
 func (g *Generator) registerPage(section string, path string, info os.FileInfo) error {
-	g.log.Debugf("start processing file: %s", info.Name())
+	g.log.Debugf("start register page: %s/%s", section, info.Name())
 	secCnf := g.getSectionConfig(section)
-	g.log.Debugf("used config: %v", secCnf)
+	//g.log.Debugf("used config: %v", secCnf)
 	dt, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -204,9 +216,9 @@ func (g *Generator) pageURLPath(pg *model.Page) *model.Page {
 
 // processPage will now generate the desired html file
 func (g *Generator) processPage(pg model.Page) error {
-	g.log.Debugf("start processing file: %s", pg.Filename)
+	g.log.Debugf("start processing page: %s/%s (%s)", pg.Section, pg.Name, pg.Filename)
 	secCnf := g.getSectionConfig(pg.Section)
-	g.log.Debugf("used config: %v", secCnf)
+	//g.log.Debugf("used config: %v", secCnf)
 
 	pg.Cnf["page"] = pg
 	pg.Cnf["section"] = secCnf
