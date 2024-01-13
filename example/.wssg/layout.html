@@ -17,37 +17,39 @@
 </head>
 
 <body>
-  <div style="height: 150px;">
-    <div style="float:left;height:150px;bottom: 0px;margin-left: 8px;">
-      <p style="font-family: {{.site.UserProperties.font}};font-size:48px;"><a href="/index.html">{{ .site.Title}}</a></p>
-    </div>
-    {{$pagename := .page.Name}}
-    <div style="float: right; bottom: 0px;margin-right: 8px;height: 100px;">
-      <div style="bottom:0px;">
-        <p style="font-family: {{.site.UserProperties.font}};font-size:36px;">
-          {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
-          {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="36px"></a>{{end}}
-        </p>
+  <header id="top" style="display: block;position: fixed; width: 100%; top: 0;background-color: #fff">
+    <div style="height: 80px;">
+      <div style="float:left;height:80px;bottom: 0px;margin-left: 8px;">
+        <p style="font-family: {{.site.UserProperties.font}};font-size:32px;"><a href="/index.html">{{ .site.Title}}</a></p>
       </div>
-      <div style="bottom:0px;">
-        <p style="font-family: {{.site.UserProperties.font}};font-size:36px;">
-          {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
-        </p>
+      {{$pagename := .page.Name}}
+      <div style="float:right;height:80px;bottom: 0px;margin-right: 16px;">
+        <div style="bottom:0px;">
+          <p style="font-family: {{.site.UserProperties.font}};font-size:28px;">
+            {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
+            {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
+            {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="36px"></a>{{end}}
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-  <div>
     <hr/>
-    <H1>{{.page.Title}}</H1>
-    {{.body}}
+  </header>
+  <div style="margin-top:80px;overflow: hidden;">
+    <div style="text-align: center;">
+      <H1>{{.page.Title}}</H1>
+      {{.body}}
 
-    (generated from "{{.page.Path}}")
+      (generated from "{{.page.Path}}")
+    </div>
   </div>
-  <div style="bottom:0px; text-align: center;">
-    {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="42px"></a>{{end}}
-    <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
-      <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
-    </p>
-  </div>
+    <footer>
+      <div style="bottom:0px; text-align: center;">
+        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="42px"></a>{{end}}
+        <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
+          <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
+        </p>
+      </div>
+    </footer>
 </body>
 </html>

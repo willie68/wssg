@@ -29,6 +29,25 @@ var SiteDefault = Site{
 	Description: "a short description of this site",
 	Keywords:    "tutorial basic static website",
 	Language:    "en",
+	UserProperties: General{
+		"font": "Tahoma, Verdana, sans-serif",
+		"webcontact": map[string]string{
+			"url":   "mailto:info@example.com",
+			"title": "info@example.com",
+		},
+		"socialmedia": map[string]any{
+			"facebook": map[string]string{
+				"title": "FB",
+				"icon":  "/images/social_fb.png",
+				"url":   "https://www.facebook.com/wilfried.klaas/",
+			},
+			"youtube": map[string]string{
+				"title": "YT",
+				"icon":  "/images/social_yt.png,",
+				"url":   "https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA",
+			},
+		},
+	},
 }
 
 var (
