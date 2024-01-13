@@ -94,15 +94,6 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 		if err != nil {
 			return err
 		}
-
-		siteConfigDir := filepath.Join(rootFolder, config.WssgFolder)
-		layoutHTMLFile := filepath.Join(siteConfigDir, "gallery.html")
-		if ok, _ := utils.FileExists(layoutHTMLFile); !ok {
-			err = os.WriteFile(layoutHTMLFile, []byte(templates.GalleryHTML), 755)
-			if err != nil {
-				return err
-			}
-		}
 	}
 
 	rest, err := frontmatter.Parse(strings.NewReader(pageTemplate), &pageConfig)

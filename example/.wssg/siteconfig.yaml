@@ -4,3 +4,13 @@ description: Design Sauber, Advertising for everything and everyone
 keywords: tutorial basic static website
 language: de
 font: Tahoma, Verdana, sans-serif
+webcontact: info@example.com
+socialmedia:
+  facebook:
+    title: FB
+    icon: /images/social_fb.png
+    url: https://www.facebook.com/wilfried.klaas/
+  youtube:
+    title: YT
+    icon: /images/social_yt.png
+    url: https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA

@@ -246,7 +246,7 @@ func (g *Gallery) ensureCopy(imgFolder, dstFolder, name string) error {
 
 // HTMLTemplateName returning the used html template
 func (g *Gallery) HTMLTemplateName() string {
-	return "gallery.html"
+	return "layout.html"
 }
 
 func (g *Gallery) creatThumb(fld string, i img, width int) error {

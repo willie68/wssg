@@ -26,6 +26,7 @@
       <div style="bottom:0px;">
         <p style="font-family: {{.site.UserProperties.font}};font-size:36px;">
           {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
+          {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="36px"></a>{{end}}
         </p>
       </div>
       <div style="bottom:0px;">
@@ -42,6 +43,11 @@
 
     (generated from "{{.page.Path}}")
   </div>
+  <div style="bottom:0px; text-align: center;">
+    {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="42px"></a>{{end}}
+    <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
+      {{.site.UserProperties.webcontact}}
+    </p>
+  </div>
 </body>
-
 </html>

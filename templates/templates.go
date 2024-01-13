@@ -11,6 +11,4 @@ var (
 
 	//go:embed gallery/page.md
 	GalleryPage string
-	//go:embed gallery/gallery.html
-	GalleryHTML string
 )
