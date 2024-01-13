@@ -1,1 +1,5 @@
 output: ./.wssg/output
+procmime: 
+  text/html: plain
+  text/markdown: markdown
+  text/text: plain

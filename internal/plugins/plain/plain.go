@@ -9,7 +9,7 @@ import (
 type Plain struct {
 }
 
-// New create a new internal plugin
+// New create a new plain plugin
 func New() plugins.Plugin {
 	return &Plain{}
 }

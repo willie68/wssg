@@ -12,11 +12,11 @@ import (
 	"github.com/willie68/wssg/internal/plugins"
 )
 
-// Md2HTML internal plugin for converting a markdown file to html
+// Md2HTML markdown plugin for converting a markdown file to html
 type Md2HTML struct {
 }
 
-// New create a new internal plugin
+// New create a new markdown plugin
 func New() plugins.Plugin {
 	return &Md2HTML{}
 }

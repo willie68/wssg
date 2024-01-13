@@ -64,7 +64,7 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	sectionDefault := config.Section{
 		Name:      name,
 		Title:     name,
-		Processor: config.ProcInternal,
+		Processor: config.ProcMarkdown,
 		URLPath:   "/",
 	}.General()
 	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
@@ -72,5 +72,5 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	if err != nil {
 		return err
 	}
-	return CreatePage(rootFolder, fmt.Sprintf("%s/index", name), config.ProcInternal, force)
+	return CreatePage(rootFolder, fmt.Sprintf("%s/index", name), config.ProcMarkdown, force)
 }

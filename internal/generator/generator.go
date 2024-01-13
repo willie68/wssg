@@ -161,7 +161,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	}
 	proc, ok := secCnf["processor"].(string)
 	if !ok {
-		proc = config.ProcInternal
+		proc = config.ProcMarkdown
 	}
 	// process pageCnf
 	defaults := make(config.General)
@@ -238,7 +238,7 @@ func (g *Generator) processPage(pg model.Page) error {
 	switch pg.Processor {
 	case gallery.PluginName:
 		processor = gallery.New(pg.Cnf)
-	case config.ProcInternal:
+	case config.ProcMarkdown:
 		processor = mdtohtml.New()
 	default:
 		processor = plain.New()

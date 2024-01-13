@@ -1,6 +1,6 @@
 ---
 name: 'about'
-processor: internal
+processor: markdown
 title: 'Über Uns'
 order: 100
 font: Georgia, serif

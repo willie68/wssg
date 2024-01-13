@@ -46,7 +46,7 @@ var (
 func init() {
 	newCmd.AddCommand(pageCmd)
 	pageCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
-	pageCmd.Flags().StringP("plugin", "p", "internal", "new page with this plugin. Default is internal.")
+	pageCmd.Flags().StringP("plugin", "p", "markdown", "new page with this plugin. Default is markdown.")
 }
 
 // CreatePage creates a new page in the site. Name should be prefixed with sections like gallerie/index

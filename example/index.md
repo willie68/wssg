@@ -1,6 +1,6 @@
 ---
 name: 'index'
-processor: internal
+processor: markdown
 title: 'Willkommen'
 order: 10
 ---

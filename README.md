@@ -72,7 +72,7 @@ Die Markdown-Dateien sollten den Inhalt sollten mit einem Frontmatter Bereich st
 ```yaml
 ---
 name: 'index'
-processor: internal
+processor: markdown
 title: 'Index'
 order: 10
 ---
@@ -80,7 +80,7 @@ order: 10
 
 `name`: technicshe Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` 
 
-`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `internal` zur Verfügung. Geplant ist noch ein Galerie-Prozessor, zur Erzeugung einer Bildgalerie.
+`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `markdown`, `gallery` und `plain` zur Verfügung. Geplant ist noch ein Galerie-Prozessor, zur Erzeugung einer Bildgalerie.
 
 `title`: Der Seitentitel.  hier können auch Sonderzeichen verwendet werden.
 
@@ -122,9 +122,9 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 # Plugins
 
-## internal
+## Markdown
 
-Internal ist ein Plugin oder besser Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
+Markdown ist ein Plugin oder besser Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
 
 ## plain
 

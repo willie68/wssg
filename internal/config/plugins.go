@@ -1,6 +1,6 @@
 package config
 
 const (
-	// ProcInternal buldin processors
-	ProcInternal = "internal"
+	// ProcMarkdown buldin processors
+	ProcMarkdown = "markdown"
 )

@@ -28,7 +28,7 @@ type Section struct {
 var SectionDefault = Section{
 	Name:      "{{.name}}",
 	Title:     "{{.name}}",
-	Processor: ProcInternal,
+	Processor: ProcMarkdown,
 }
 
 // General convert this section to general

@@ -12,7 +12,7 @@ var (
 	PageDefault = Page{
 		Title:     "{{.name}}",
 		Name:      "{{.name}}",
-		Processor: ProcInternal,
+		Processor: ProcMarkdown,
 	}
 )
 

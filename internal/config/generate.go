@@ -13,13 +13,21 @@ const GenerateFile = "generate.yaml"
 
 // Generate the configuration for the generator
 type Generate struct {
+	// Output where to output the generated site files
 	Output string `yaml:"output"`
+	// Propcessors conect mime types with processors
+	ProcMime map[string]string `yaml:"procmime"`
 }
 
 var (
 	// GenDefault the default generator config
 	GenDefault = Generate{
 		Output: fmt.Sprintf("./%s/output", WssgFolder),
+		ProcMime: map[string]string{
+			"text/html":     "plain",
+			"text/markdown": "markdown",
+			"text/plain":    "plain",
+		},
 	}
 	// GenConfig the actual generator config
 	GenConfig Generate
