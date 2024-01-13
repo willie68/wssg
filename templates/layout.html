@@ -28,7 +28,7 @@
           <p style="font-family: {{.site.UserProperties.font}};font-size:28px;">
             {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
             {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
-            {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="36px"></a>{{end}}
+            {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}}</a>{{end}}
           </p>
         </div>
       </div>
@@ -45,7 +45,7 @@
   </div>
     <footer>
       <div style="bottom:0px; text-align: center;">
-        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="42px"></a>{{end}}
+        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}}</a>{{end}}
         <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
           <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
         </p>
