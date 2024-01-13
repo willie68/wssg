@@ -46,7 +46,7 @@
   <div style="bottom:0px; text-align: center;">
     {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"><img src="{{.icon}}" width="42px"></a>{{end}}
     <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
-      {{.site.UserProperties.webcontact}}
+      <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
     </p>
   </div>
 </body>

@@ -4,7 +4,9 @@ description: Design Sauber, Advertising for everything and everyone
 keywords: tutorial basic static website
 language: de
 font: Tahoma, Verdana, sans-serif
-webcontact: info@example.com
+webcontact:
+  url: mailto:info@example.com
+  title: info@example.com
 socialmedia:
   facebook:
     title: FB
