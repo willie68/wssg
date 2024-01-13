@@ -31,7 +31,7 @@ Zum Testen ob alles funktioniert gibt einfach `wssg version` ein.
 
 # Quickstart
 
-Für den schnellen Start mit dem wssg wird zunächst eine Installation vorausgesetzt.
+Für den schnellen Start mit dem `wssg` wird zunächst eine Installation vorausgesetzt.
 
 Als erstes erzeugen wir uns eine neue Site. 
 
@@ -78,15 +78,15 @@ order: 10
 ---
 ```
 
-`name`: technicshe Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` 
+`name`: technischer Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` 
 
-`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `markdown`, `gallery` und `plain` zur Verfügung. Geplant ist noch ein Galerie-Prozessor, zur Erzeugung einer Bildgalerie.
+`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `markdown`, `gallery` und `plain` zur Verfügung. 
 
-`title`: Der Seitentitel.  hier können auch Sonderzeichen verwendet werden.
+`title`: Der Seitentitel. Hier können auch Sonderzeichen verwendet werden.
 
-`order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. SO kann man später neue Seite bei 15, 25 usw. einfügen.
+`order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. So kann man später neue Seite bei 15, 25 usw. einfügen.
 
-Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Prozessor definiert werden.  
+Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Prozessor definiert werden.  Oder auch nur von der eigenen Seite.
 
 ## Variablen für eine Seite
 
@@ -98,7 +98,7 @@ Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Pro
 
 `{{.site.Title}}` den Webseitentitel. Ebenso funktionieren `{{.site.Description}}` und `{{.site.Keywords}}`
 
-Unter `{{.site.Userproperties}}` stehen alle unbekannten Parameter zur Verfügung. Diese können von dem HTML Template definiert werden. Als Beispiel dient der `font` Parameter. Will man also den in der Seitenkonfiguration angegeben Font verwenden, gelingt das mit `{{.site.UserProperties.font}}`. Diese Userproperties werden auch als Defaults für Bereiche- und Seitenkonfigurationen verwendet. 
+Unter `{{.site.Userproperties}}` stehen alle unbekannten Parameter zur Verfügung. Diese können von dem HTML Template definiert werden. Als Beispiel dient der `font` Parameter. Will man also den in der Seitenkonfiguration angegeben Font verwenden, gelingt das mit `{{.site.UserProperties.font}}`. Diese Userproperties werden auch als Defaults für Bereiche- und Seitenkonfigurationen verwendet. Weitere bereits definierte Userproperties: socialmedia oder webcontact
 
 Für die aktuelle Seite sind folgende Variablen definiert:
 
@@ -122,13 +122,13 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 # Plugins
 
-## Markdown
+## markdown
 
 Markdown ist ein Plugin oder besser Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
 
 ## plain
 
-Beim plain Plugin wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden vorgenommen, die Seite aber nicht weiter verarbeitet. Dieses Plugin ist als Default gesetzt.
+Beim plain Plugin wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden jedoch vorgenommen, die Seite aber nicht weiter verarbeitet. Dieses Plugin ist als Default gesetzt.
 
 ## gallery
 
@@ -188,3 +188,7 @@ keyname kann folgende Eigenschaften verwenden
 `.sizebytes`: ist die Dateigröße in Bytes
 
 Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei eingefügt.
+
+# Beispiel
+
+Ein Beispiel für die Vielseitigkeit des `wssg` befindet sich im Verzeichnis `example`. Dieses kann man `wssg generate` oder `wssg serve` verwenden.
