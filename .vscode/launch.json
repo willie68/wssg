@@ -100,6 +100,22 @@
       ]
     },
     {
+      "name": "vs wssg generate",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "generate",
+        "-f",
+        "--verbose",
+        "-r",
+        "H:/privat/nxt-vs/Volker Sauber/sauber"
+      ]
+    },
+    {
       "name": "wssg serve",
       "type": "go",
       "request": "launch",
@@ -112,6 +128,21 @@
         "--verbose",
         "-r",
         "./example"
+      ]
+    },
+    {
+      "name": "vs wssg serve",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "serve",
+        "--verbose",
+        "-r",
+        "H:/privat/nxt-vs/Volker Sauber/sauber"
       ]
     }
   ]

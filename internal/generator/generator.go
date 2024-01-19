@@ -101,7 +101,8 @@ func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
 		name = info.Name()
 	}
 	g.log.Debugf("walk: %s", path)
-	if path == g.rootFolder || name == "" {
+	section := strings.ReplaceAll(path, "\\", "/")
+	if path == section || name == "" {
 		return nil
 	}
 	// skip directories with . prefix
@@ -112,7 +113,8 @@ func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
 	if strings.HasPrefix(name, ".") || strings.HasPrefix(name, "_") {
 		return nil
 	}
-	section := strings.ReplaceAll(path, "\\", "/")
+	rootPath := strings.ReplaceAll(g.rootFolder, "\\", "/")
+	section = strings.TrimPrefix(section, rootPath)
 	sections := strings.Split(section, "/")
 	if info.IsDir() {
 		return nil

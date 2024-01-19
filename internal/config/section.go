@@ -58,11 +58,23 @@ func G2Section(g General) Section {
 			up[k] = v
 		}
 	}
+	name, ok := g["name"].(string)
+	if !ok {
+		name = "no name given"
+	}
+	title, ok := g["title"].(string)
+	if !ok {
+		title = "no title given"
+	}
+	proc, ok := g["processor"].(string)
+	if !ok {
+		proc = ProcMarkdown
+	}
 	return Section{
-		Name:           g["name"].(string),
-		Title:          g["title"].(string),
-		Processor:      g["processor"].(string),
-		URLPath:        fmt.Sprintf("/%s", g["name"].(string)),
+		Name:           name,
+		Title:          title,
+		Processor:      proc,
+		URLPath:        fmt.Sprintf("/%s", name),
 		UserProperties: up,
 	}
 }
