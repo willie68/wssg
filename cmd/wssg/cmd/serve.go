@@ -29,6 +29,7 @@ func Serve(rootFolder string) error {
 	log := logging.New().WithName("serve")
 	log.Info("generate web site")
 	gen := generator.New(rootFolder, true)
+	gen.WithAutoreload()
 	err := gen.Execute()
 	if err != nil {
 		return err

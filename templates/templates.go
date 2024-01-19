@@ -8,6 +8,8 @@ var (
 	PageMD string
 	//go:embed layout.html
 	LayoutHTML string
+	//go:embed reload.js
+	AutoreloadJS string
 
 	//go:embed gallery/page.md
 	GalleryPage string

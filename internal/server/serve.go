@@ -1,6 +1,8 @@
 package server
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -8,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/generator"
 	"github.com/willie68/wssg/internal/logging"
 )
@@ -54,7 +57,11 @@ func (s *Server) StartWatcher() error {
 		return err
 	}
 	err = filepath.Walk(absPath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
+		if info.IsDir() && (strings.HasPrefix(info.Name(), ".") && (info.Name() != config.WssgFolder)) {
+			return filepath.SkipDir
+		}
+		absPath, err := filepath.Abs(path)
+		if (s.output == absPath) || (err != nil) {
 			return filepath.SkipDir
 		}
 		if info.IsDir() {
@@ -113,6 +120,31 @@ func (s *Server) Serve() error {
 
 	fileServer := http.FileServer(http.Dir(s.output))
 	http.Handle("/", fileServer)
+	http.HandleFunc("/_refresh", func(w http.ResponseWriter, r *http.Request) {
+		refresh := struct {
+			Refresh bool `json:"refresh"`
+		}{
+			Refresh: false,
+		}
+		if s.gen.IsRefreshed() {
+			refresh.Refresh = true
+		}
+		dst, err := json.Marshal(refresh)
+		if err != nil {
+			msg := fmt.Sprintf("error output refresh: %v", err)
+			s.log.Error(msg)
+			w.WriteHeader(http.StatusInternalServerError)
+			_, err = w.Write([]byte(msg))
+			if err != nil {
+				s.log.Errorf("error output refresh: %v", err)
+			}
+		}
+		w.WriteHeader(http.StatusOK)
+		_, err = w.Write(dst)
+		if err != nil {
+			s.log.Errorf("error output refresh: %v", err)
+		}
+	})
 	s.log.Info("start serving site. use http://localhost:8080/index.html for the result. Stopping server with ctrl+c.")
 	return http.ListenAndServe(":8080", nil)
 }

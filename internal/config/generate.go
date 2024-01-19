@@ -15,8 +15,10 @@ const GenerateFile = "generate.yaml"
 type Generate struct {
 	// Output where to output the generated site files
 	Output string `yaml:"output"`
-	// Propcessors conect mime types with processors
+	// Processors conect mime types with processors
 	ProcMime map[string]string `yaml:"procmime"`
+	// Autoreload script
+	Autoreload string `yaml:"autoreload"`
 }
 
 var (
@@ -28,6 +30,7 @@ var (
 			"text/markdown": "markdown",
 			"text/plain":    "plain",
 		},
+		Autoreload: "",
 	}
 	// GenConfig the actual generator config
 	GenConfig Generate

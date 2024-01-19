@@ -19,6 +19,7 @@ import (
 	"github.com/willie68/wssg/internal/plugins/mdtohtml"
 	"github.com/willie68/wssg/internal/plugins/plain"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/templates"
 	"gopkg.in/yaml.v3"
 )
 
@@ -35,6 +36,8 @@ type Generator struct {
 	sections   map[string]config.General
 	pages      []model.Page
 	log        *logging.Logger
+	refreshed  bool
+	autoreload bool
 }
 
 // New creates a new initialised generator
@@ -52,7 +55,15 @@ func (g *Generator) init() {
 	g.sections = make(map[string]config.General)
 	g.siteConfig = config.LoadSite(g.rootFolder)
 	g.genConfig = config.LoadGenConfig(g.rootFolder)
+	if g.autoreload {
+		g.genConfig.Autoreload = templates.AutoreloadJS
+	}
 	g.pages = make([]model.Page, 0)
+}
+
+// WithAutoreload adapt autorelaod
+func (g *Generator) WithAutoreload() {
+	g.autoreload = true
 }
 
 // SiteConfig return the configuration of the site
@@ -84,10 +95,16 @@ func (g *Generator) Execute() error {
 			return err
 		}
 	}
+	g.refreshed = true
 	g.log.Debug("finished")
 	return nil
 }
 
+func (g *Generator) IsRefreshed() bool {
+	rf := g.refreshed
+	g.refreshed = false
+	return rf
+}
 func (g *Generator) prepare() error {
 	return filepath.Walk(g.rootFolder, g.doWalk)
 }
