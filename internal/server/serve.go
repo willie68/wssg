@@ -37,7 +37,12 @@ func New(rootFolder string, gen generator.Generator) Server {
 }
 
 func (s *Server) init() {
-	s.output = filepath.Join(s.rootFolder, s.gen.GenConfig().Output)
+	output := filepath.Join(s.rootFolder, s.gen.GenConfig().Output)
+	output, err := filepath.Abs(output)
+	if err != nil {
+		s.log.Errorf("error converting relativ path to absolute: %v", err)
+	}
+	s.output = output
 	// Starting the file watcher on the output folder
 }
 

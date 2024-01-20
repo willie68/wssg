@@ -12,13 +12,27 @@
 
     body {
       font-family: {{.font}};
+      background-color: #E5E4E2;
     }
+
+    header {
+      background-color: #E5E4E2;
+      display: block;
+      position: fixed; 
+      width: 100%; 
+      top: 0;
+    }
+
+    footer {
+      margin-top: 12px;
+    }
+
   </style>
   <script>{{ .generator.Autoreload }}</script>
 </head>
 
 <body>
-  <header id="top" style="display: block;position: fixed; width: 100%; top: 0;background-color: #fff">
+  <header id="top">
     <div style="height: 80px;">
       <div style="float:left;height:80px;bottom: 0px;margin-left: 8px;">
         <p style="font-family: {{.site.UserProperties.font}};font-size:32px;"><a href="/index.html">{{ .site.Title}}</a></p>
@@ -27,9 +41,9 @@
       <div style="float:right;height:80px;bottom: 0px;margin-right: 16px;">
         <div style="bottom:0px;">
           <p style="font-family: {{.site.UserProperties.font}};font-size:28px;">
-            {{range .pages}} {{ if ne $pagename .Name }} <a href="{{.URLPath}}">{{.Title}}</a> {{end}} {{end}}
-            {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> {{end}}
-            {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}}</a>{{end}}
+            {{range .pages}} {{ if ne $pagename .Name }} <a  href="{{.URLPath}}">{{.Title}}</a> | {{end}} {{end}}
+            {{range .sections}} <a href="{{.URLPath}}">{{.Title}}</a> | {{end}}
+            {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank"> {{.title}} | </a>{{end}}
           </p>
         </div>
       </div>
@@ -46,12 +60,11 @@
   </div>
     <footer>
       <div style="bottom:0px; text-align: center;">
-        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}}</a>{{end}}
+        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}} | </a>{{end}}
         <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
           <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
         </p>
       </div>
     </footer>
 </body>
-
 </html>
