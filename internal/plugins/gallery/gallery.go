@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"slices"
 	"sync"
+	txttpl "text/template"
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
@@ -105,16 +106,28 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 		}()
 	}
 	wg.Wait()
+
 	// generating the gallery page with htmx
-	var b bytes.Buffer
-	tplEntry, ok := pg.Cnf["imageentry"].(string)
+	tplImgEntry, ok := pg.Cnf["imageentry"].(string)
 	if !ok {
 		return nil, fmt.Errorf("something wrong with the gallery imageentry on page \"%s\"", pg.Name)
 	}
-	tpl, err := template.New("galleryentry").Parse(tplEntry)
+	tplImg, err := template.New("galleryentry").Parse(tplImgEntry)
 	if err != nil {
 		return nil, err
 	}
+
+	imgContainer, ok := pg.Cnf["imagecontainer"].(string)
+	if !ok {
+		g.log.Info("no image container given")
+		imgContainer = "{{ .images }}"
+	}
+	tplImgContainer, err := txttpl.New("gallerycontainer").Parse(imgContainer)
+	if err != nil {
+		return nil, err
+	}
+
+	var b bytes.Buffer
 	for _, i := range images {
 		m := make(map[string]string)
 		m["name"] = utils.FileNameWOExt(i.Name)
@@ -127,13 +140,20 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 		}
 
 		var bb bytes.Buffer
-		err = tpl.Execute(&bb, m)
+		err = tplImg.Execute(&bb, m)
 		if err != nil {
 			return nil, err
 		}
 		b.WriteString(bb.String())
 	}
-	pg.Cnf["images"] = b.String()
+	var bc bytes.Buffer
+	m := make(map[string]any)
+	m["images"] = b.String()
+	err = tplImgContainer.Execute(&bc, m)
+	if err != nil {
+		return nil, err
+	}
+	pg.Cnf["images"] = bc.String()
 
 	// extract md
 	return mdtohtml.New().CreateBody(content, pg)
