@@ -36,8 +36,15 @@ var (
 
 // Gallery struct for the processor
 type Gallery struct {
-	cnf config.General
-	log *logging.Logger
+	cnf           config.General
+	log           *logging.Logger
+	width         int
+	force         bool
+	crop          bool
+	imgFolder     string
+	dstFolder     string
+	images        []img
+	templateImage *template.Template
 }
 
 type img struct {
@@ -59,53 +66,45 @@ func New(cnf config.General) plugins.Plugin {
 // CreateBody creating ths body for this gallery page
 func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 	// getting all image file names
-	imgFolder, ok := pg.Cnf["images"].(string)
+	imgFld, ok := pg.Cnf["images"].(string)
 	if !ok {
 		return nil, errors.New("can't determine image folder")
 	}
-	if !filepath.IsAbs(imgFolder) {
-		imgFolder = filepath.Join(pg.SourceFolder, imgFolder)
+	if !filepath.IsAbs(imgFld) {
+		imgFld = filepath.Join(pg.SourceFolder, imgFld)
 	}
+	g.imgFolder = imgFld
+
 	imgProps := pg.Cnf["imgproperties"]
 	props := utils.ConvertArrIntToArrString(imgProps)
-	images, err := g.prepareImageList(imgFolder, props)
+	imgs, err := g.prepareImageList(props)
 	if err != nil {
 		return nil, err
 	}
-
-	dstFolder := filepath.Join(pg.DestFolder, "images")
-	err = os.MkdirAll(dstFolder, os.ModePerm)
+	g.images = imgs
+	g.dstFolder = filepath.Join(pg.DestFolder, "images")
+	err = g.ensureImageCopy()
 	if err != nil {
 		return nil, err
-	}
-
-	for _, de := range images {
-		// copy to output folder
-		err = g.ensureCopy(imgFolder, dstFolder, de.Name)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	// generating thumbs in output folder
-	width := 100
+	g.width = 100
 	if w, ok := pg.Cnf["thumbswidth"].(int); ok {
-		width = w
+		g.width = w
 	}
+	g.crop = false
+	if c, ok := pg.Cnf["crop"].(bool); ok {
+		g.crop = c
+	}
+	g.force = false
+	if genCnf, ok := pg.Cnf["generator"].(config.Generate); ok {
+		g.force = genCnf.Force
+	}
+
 	g.log.Info("generating thumbs")
-	var wg sync.WaitGroup
-	for _, i := range images {
-		wg.Add(1)
-		img := i
-		go func() {
-			defer wg.Done()
-			err := g.creatThumb(dstFolder, img, width)
-			if err != nil {
-				g.log.Errorf("error creating thumbnail: %s, %v", img.Name, err)
-			}
-		}()
-	}
-	wg.Wait()
+
+	g.generateThumbs()
 
 	// generating the gallery page with htmx
 	tplImgEntry, ok := pg.Cnf["imageentry"].(string)
@@ -116,6 +115,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	g.templateImage = tplImg
 
 	imgContainer, ok := pg.Cnf["imagecontainer"].(string)
 	if !ok {
@@ -127,8 +127,26 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 		return nil, err
 	}
 
+	imagesHTML, err := g.writeImageHTMLList()
+	if err != nil {
+		return nil, err
+	}
+	var bc bytes.Buffer
+	m := make(map[string]any)
+	m["images"] = imagesHTML
+	err = tplImgContainer.Execute(&bc, m)
+	if err != nil {
+		return nil, err
+	}
+	pg.Cnf["images"] = bc.String()
+
+	// extract md
+	return mdtohtml.New().CreateBody(content, pg)
+}
+
+func (g *Gallery) writeImageHTMLList() (string, error) {
 	var b bytes.Buffer
-	for _, i := range images {
+	for _, i := range g.images {
 		m := make(map[string]string)
 		m["name"] = utils.FileNameWOExt(i.Name)
 		m["source"] = fmt.Sprintf("images/%s", i.Source)
@@ -140,31 +158,56 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 		}
 
 		var bb bytes.Buffer
-		err = tplImg.Execute(&bb, m)
+		err := g.templateImage.Execute(&bb, m)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
-		b.WriteString(bb.String())
+		_, err = b.WriteString(bb.String())
+		if err != nil {
+			return "", err
+		}
 	}
-	var bc bytes.Buffer
-	m := make(map[string]any)
-	m["images"] = b.String()
-	err = tplImgContainer.Execute(&bc, m)
-	if err != nil {
-		return nil, err
-	}
-	pg.Cnf["images"] = bc.String()
-
-	// extract md
-	return mdtohtml.New().CreateBody(content, pg)
+	return b.String(), nil
 }
 
-func (g *Gallery) prepareImageList(imgFolder string, props []string) ([]img, error) {
-	imageDescriptions, err := g.readImageDescription(imgFolder)
+func (g *Gallery) generateThumbs() {
+	var wg sync.WaitGroup
+	for _, i := range g.images {
+		wg.Add(1)
+		img := i
+		go func() {
+			defer wg.Done()
+			err := g.creatThumb(g.dstFolder, img, g.width, g.force, g.crop)
+			if err != nil {
+				g.log.Errorf("error creating thumbnail: %s, %v", img.Name, err)
+			}
+		}()
+	}
+	wg.Wait()
+}
+
+func (g *Gallery) ensureImageCopy() error {
+	err := os.MkdirAll(g.dstFolder, os.ModePerm)
+	if err != nil {
+		return err
+	}
+
+	for _, de := range g.images {
+		// copy to output folder
+		err = g.ensureCopy(g.imgFolder, g.dstFolder, de.Name)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (g *Gallery) prepareImageList(props []string) ([]img, error) {
+	imageDescriptions, err := g.readImageDescription(g.imgFolder)
 	if err != nil {
 		return nil, err
 	}
-	imgs, err := os.ReadDir(imgFolder)
+	imgs, err := os.ReadDir(g.imgFolder)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +236,7 @@ func (g *Gallery) prepareImageList(imgFolder string, props []string) ([]img, err
 		images = append(images, i)
 	}
 	if len(props) > 0 {
-		err = g.writeImageDescription(imgFolder, imageDescriptions)
+		err = g.writeImageDescription(g.imgFolder, imageDescriptions)
 		if err != nil {
 			return nil, err
 		}
@@ -269,13 +312,13 @@ func (g *Gallery) HTMLTemplateName() string {
 	return "layout.html"
 }
 
-func (g *Gallery) creatThumb(fld string, i img, width int) error {
-	g.log.Debugf("generating thumb: %s", i.Name)
+func (g *Gallery) creatThumb(fld string, i img, width int, force, crop bool) error {
 	dst := filepath.Join(fld, i.Thumbnail)
 	ok, _ := utils.FileExists(dst)
-	if ok {
+	if ok && !force {
 		return nil
 	}
+	g.log.Debugf("generating thumb: %s", i.Name)
 	src := filepath.Join(fld, i.Source)
 
 	img, err := imgio.Open(src)
@@ -294,18 +337,22 @@ func (g *Gallery) creatThumb(fld string, i img, width int) error {
 	case 8: // rotate 270
 		img = transform.Rotate(img, 270.0, nil)
 	}
-	var rect image.Rectangle
 	bd := img.Bounds()
-	if bd.Dx() < bd.Dy() {
-		delta := bd.Dy() - bd.Dx()
-		rect = image.Rect(0, delta/2, bd.Dx(), (delta/2)+bd.Dx())
-	} else {
-		delta := bd.Dx() - bd.Dy()
-		rect = image.Rect(delta/2, 0, (delta/2)+bd.Dy(), bd.Dy())
+	height := int(float64(width) * (float64(bd.Dy()) / float64(bd.Dx())))
+	if crop {
+		height = width
+		var rect image.Rectangle
+		if bd.Dx() < bd.Dy() {
+			delta := bd.Dy() - bd.Dx()
+			rect = image.Rect(0, delta/2, bd.Dx(), (delta/2)+bd.Dx())
+		} else {
+			delta := bd.Dx() - bd.Dy()
+			rect = image.Rect(delta/2, 0, (delta/2)+bd.Dy(), bd.Dy())
+		}
+		img = transform.Crop(img, rect)
 	}
-	img = transform.Crop(img, rect)
 
-	thb := transform.Resize(img, width, width, transform.NearestNeighbor)
+	thb := transform.Resize(img, width, height, transform.NearestNeighbor)
 
 	err = imgio.Save(dst, thb, imgio.PNGEncoder())
 	return err

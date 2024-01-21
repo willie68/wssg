@@ -59,6 +59,7 @@ func (g *Generator) init() {
 		g.genConfig.Autoreload = templates.AutoreloadJS
 	}
 	g.pages = make([]model.Page, 0)
+	g.genConfig.Force = g.force
 }
 
 // WithAutoreload adapt autorelaod

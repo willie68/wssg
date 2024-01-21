@@ -19,6 +19,8 @@ type Generate struct {
 	ProcMime map[string]string `yaml:"procmime"`
 	// Autoreload script
 	Autoreload string `yaml:"autoreload"`
+	// force forces to create everything newly
+	Force bool `yaml:"force"`
 }
 
 var (

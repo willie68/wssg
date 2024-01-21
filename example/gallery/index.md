@@ -4,6 +4,7 @@ processor: 'gallery'
 title: 'Gallerie'
 images: 'images'
 thumbswidth: 200
+crop: true
 imgproperties: 
   - description
   - tags

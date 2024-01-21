@@ -141,10 +141,11 @@ processor: 'gallery'
 title: 'index'
 images: 'images'
 thumbswidth: 200
----
+crop: true
 imgproperties: 
   - description
   - tags
+imagecontainer: '{{`{{.images}}`}}'
 imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:280px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>Beschreibung: {{`{{.description}}`}}<br/>Größe: {{`{{.size}}`}}</p></a></div>'
 ---
 ```
@@ -152,6 +153,8 @@ imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;heig
 `images`: gibt das Verzeichnis an, wo die zu verarbeitenden Bilddaten liegen. Es kann nur ein Ordner angegeben werden. Alle Bilddaten darin werden dann verarbeitet. Als Bilder werden Dateien mit folgenden Endungen betrachtet: `*.jpeg, *.jpg, *.bmp, *.png` 
 
 `thumbswidth`: ist die Breite der Thumbs, die von dem Plugin automatisch generiert werden.
+
+`crop`: mit der boolschen Ausdruck crop kann man die Thumbnails entsprechend ihrer Breite abschneiden. Bei `false` bleibt bei den Thumbs das Seitenverhältnis erhalten, `true` erzeugt quadratische Thumbnails der Breite `thumbswidth`. 
 
 `imgproperties`: Hier kann man optional eine Liste zusätzlicher Bildeigenschaften hinterlegen. Bei der Generierung wird dann im Bildordner eine Datei `_content.yaml` angelegt. Diese enthält pro Bild dann die entsprechenden Eigenschaften.
 
@@ -172,6 +175,8 @@ faizur-rehman:
 ```
 
 Wird ein neues Bild in den Ordner gelegt, wird bei der nächsten Generierung auch hier ein neuer Eintrag erzeugt. Vorhandene Einträge bleiben immer erhalten. Einträge für gelöschte Bilder werden derzeit nicht entfernt, aber auch nicht weiter berücksichtigt. Diese Eigenschaften können dann im `imageentry` entsprechend benutzt werden. 
+
+`imagecontainer`: Hier kann man seinen eigenen Container um die Bilderliste definieren. An die Position des Macros `.images` kommt dann die Bilderliste.
 
 `imageentry`: Hier steht das HTML Template, welches ein einzelnes Bild darstellt. Bitte beachte: für jedes Bild wird dieses Template einmal generiert. Dabei werden auch wieder die typischen Ersetzungen gemacht. {{.title}} würde also auch hier den Seitentitel einfügen. Um auf die Eigenschaften der Datei zugreifen zu können, müssen diese zus. gekennzeichnet werden. Dazu dient der folgende Ausdruck:
 
