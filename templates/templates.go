@@ -13,4 +13,6 @@ var (
 
 	//go:embed gallery/page.md
 	GalleryPage string
+	//go:embed gallery/style.css
+	GalleryStyle string
 )

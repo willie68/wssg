@@ -22,6 +22,7 @@ import (
 	"github.com/willie68/wssg/internal/plugins"
 	"github.com/willie68/wssg/internal/plugins/mdtohtml"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/templates"
 	"gopkg.in/yaml.v3"
 )
 
@@ -142,7 +143,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 	// extract md
 	res, err := mdtohtml.New().CreateBody(content, pg)
-	res.Style = ""
+	res.Style = templates.GalleryStyle
 	res.Script = ""
 	if err != nil {
 		return nil, err
@@ -169,6 +170,10 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 			return "", err
 		}
 		_, err = b.WriteString(bb.String())
+		if err != nil {
+			return "", err
+		}
+		_, err = b.WriteString("\r\n")
 		if err != nil {
 			return "", err
 		}
