@@ -153,7 +153,11 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 func (g *Gallery) writeImageHTMLList() (string, error) {
 	var b bytes.Buffer
-	for _, i := range g.images {
+	_, err := b.WriteString("<div class=\"galrow\">\r\n  <div class=\"galcolumn\">\r\n")
+	if err != nil {
+		return "", err
+	}
+	for x, i := range g.images {
 		m := make(map[string]string)
 		m["name"] = utils.FileNameWOExt(i.Name)
 		m["source"] = fmt.Sprintf("images/%s", i.Source)
@@ -177,6 +181,16 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 		if err != nil {
 			return "", err
 		}
+		if (x % 3) == 2 {
+			_, err := b.WriteString("  </div>\r\n  <div class=\"galcolumn\">\r\n")
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+	_, err = b.WriteString("  </div>\r\n</div>\r\n")
+	if err != nil {
+		return "", err
 	}
 	return b.String(), nil
 }
