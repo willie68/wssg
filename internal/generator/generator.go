@@ -266,11 +266,13 @@ func (g *Generator) processPage(pg model.Page) error {
 
 	// now process page with plugin
 	// set converted md as body
-	ht, err := processor.CreateBody(dt, pg)
+	res, err := processor.CreateBody(dt, pg)
 	if err != nil {
 		return err
 	}
-	pg.Cnf["body"] = string(ht)
+	pg.Cnf["body"] = res.Body
+	pg.Cnf["style"] = res.Style
+	pg.Cnf["script"] = res.Script
 
 	// load html layout
 	//TODO layout.html should be in the site config
@@ -279,7 +281,7 @@ func (g *Generator) processPage(pg model.Page) error {
 	if err != nil {
 		return err
 	}
-	ht, err = g.mergeHTML(string(layout), pg.Cnf)
+	ht, err := g.mergeHTML(string(layout), pg.Cnf)
 	if err != nil {
 		return err
 	}

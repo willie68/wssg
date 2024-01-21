@@ -22,7 +22,7 @@ func New() plugins.Plugin {
 }
 
 // CreateBody interface method to create a html body from a markdown file
-func (m *Md2HTML) CreateBody(content []byte, _ model.Page) ([]byte, error) {
+func (m *Md2HTML) CreateBody(content []byte, _ model.Page) (*plugins.Response, error) {
 	// extract md
 	ignore := make(config.General)
 	md, err := frontmatter.Parse(strings.NewReader(string(content)), &ignore)
@@ -31,7 +31,9 @@ func (m *Md2HTML) CreateBody(content []byte, _ model.Page) ([]byte, error) {
 	}
 	// convert md to html
 	ht := mdToHTML(md)
-	return ht, nil
+	return &plugins.Response{
+		Body: string(ht),
+	}, nil
 }
 
 // HTMLTemplateName returning the used html template

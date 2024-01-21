@@ -64,7 +64,7 @@ func New(cnf config.General) plugins.Plugin {
 }
 
 // CreateBody creating ths body for this gallery page
-func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
+func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, error) {
 	// getting all image file names
 	imgFld, ok := pg.Cnf["images"].(string)
 	if !ok {
@@ -141,7 +141,13 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) ([]byte, error) {
 	pg.Cnf["images"] = bc.String()
 
 	// extract md
-	return mdtohtml.New().CreateBody(content, pg)
+	res, err := mdtohtml.New().CreateBody(content, pg)
+	res.Style = ""
+	res.Script = ""
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (g *Gallery) writeImageHTMLList() (string, error) {
