@@ -157,6 +157,7 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	imgCnt := float64(len(g.images))
 	for x, i := range g.images {
 		m := make(map[string]string)
 		m["name"] = utils.FileNameWOExt(i.Name)
@@ -181,7 +182,7 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if (x % 3) == 2 {
+		if (x == int(imgCnt/3.0)-1) || (x == int(imgCnt*2.0/3.0)-1) {
 			_, err := b.WriteString("  </div>\r\n  <div class=\"galcolumn\">\r\n")
 			if err != nil {
 				return "", err
