@@ -46,7 +46,7 @@ var SiteDefault = Site{
 			},
 		},
 		"cookiebanner": map[string]any{
-			"enabled": true,
+			"enabled": false,
 			"text":    "",
 		},
 	},

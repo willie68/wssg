@@ -112,7 +112,7 @@ func (g *Generator) prepare() error {
 
 func (g *Generator) doWalk(path string, info os.FileInfo, err error) error {
 	if err != nil {
-		return err
+		return nil
 	}
 	name := ""
 	if info != nil {
@@ -230,7 +230,7 @@ func (g *Generator) pageURLPath(pg *model.Page) *model.Page {
 		pg.URLPath = fmt.Sprintf("%s.html", pg.Name)
 		return pg
 	}
-	pg.URLPath = fmt.Sprintf("%s/%s.html", pg.Section, pg.Name)
+	pg.URLPath = fmt.Sprintf("/%s/%s.html", pg.Section, pg.Name)
 	return pg
 }
 
