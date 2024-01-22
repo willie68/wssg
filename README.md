@@ -63,6 +63,36 @@ Möchte man einen neuen Bereich (section) mit verschiedene Seiten anlegen, kann 
 
 # Programmparameter
 
+# Site Einstellungen
+
+In der Datei .wssg/siteconfig.yaml werden die Einstellungen der gesamten Website verwaltet. 
+
+```yaml
+baseurl: design_sauber.com
+title: Design Sauber
+description: Design Sauber, Advertising for everything and everyone
+keywords: tutorial basic static website
+language: de
+font: Tahoma, Verdana, sans-serif
+webcontact:
+ url: mailto:info@example.com
+ title: info@example.com
+socialmedia:
+ facebook:
+  title: FB
+  icon: /images/social_fb.png
+  url: https://www.facebook.com/wilfried.klaas/
+ youtube:
+  title: YT
+  icon: /images/social_yt.png
+  url: https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA
+cookiebanner:
+ enabled: true
+ text: ''
+```
+
+Die Eigenschaften sind eigentlich selbsterklärend. Alle Eigenschaften stehen auf jeder Seite zur Verfügung und können auch von jeder Seite überschrieben werden. Zusätzlich sind diese auch unter dem Bereich "site" (nicht überschreibbar) zugreifbar. 
+
 # Seitenaufbau
 
 ## Frontmatter für Markdown

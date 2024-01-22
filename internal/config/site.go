@@ -45,6 +45,10 @@ var SiteDefault = Site{
 				"url":   "https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA",
 			},
 		},
+		"cookiebanner": map[string]any{
+			"enabled": true,
+			"text":    "",
+		},
 	},
 }
 

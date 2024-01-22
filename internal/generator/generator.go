@@ -273,6 +273,16 @@ func (g *Generator) processPage(pg model.Page) error {
 	pg.Cnf["body"] = res.Body
 	pg.Cnf["style"] = res.Style
 	pg.Cnf["script"] = res.Script
+	banner := ""
+	if bn, ok := pg.Cnf["cookiebanner"].(config.General); ok {
+		if en, ok := bn["enabled"].(bool); ok && en {
+			banner = templates.Cookiebanner
+			if txt, ok := bn["text"].(string); !ok || txt == "" {
+				bn["text"] = templates.CookiebannerText
+			}
+		}
+	}
+	pg.Cnf["cbanner"] = banner
 
 	// load html layout
 	//TODO layout.html should be in the site config
