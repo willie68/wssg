@@ -142,11 +142,12 @@ title: 'index'
 images: 'images'
 thumbswidth: 200
 crop: true
+fluid: false
 imgproperties: 
   - description
   - tags
 imagecontainer: '{{`{{.images}}`}}'
-imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:280px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>Beschreibung: {{`{{.description}}`}}<br/>Größe: {{`{{.size}}`}}</p></a></div>'
+imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:280px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>Beschreibung: {{`{{.description}}`}}<br/>Größe: {{`{{.size}}`}}</p></a></div><br/>'
 ---
 ```
 
@@ -155,6 +156,12 @@ imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;heig
 `thumbswidth`: ist die Breite der Thumbs, die von dem Plugin automatisch generiert werden.
 
 `crop`: mit der boolschen Ausdruck crop kann man die Thumbnails entsprechend ihrer Breite abschneiden. Bei `false` bleibt bei den Thumbs das Seitenverhältnis erhalten, `true` erzeugt quadratische Thumbnails der Breite `thumbswidth`. 
+
+`fluid`: Mit fluid wird eine fluide Gallery erzeugt. Diese hat 3 Spalten. Zusätzlich wird bei kleineren Displays auf eine einspaltige Anzeige umgeschaltet. Ein optimaler Imageentry für die fluide Gallery wäre folgender:
+
+```yaml
+imageentry: '<div style="display: inline-block;overflow: hidden;width:{{`{{.thumbswidth}}`}}px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}" target="_blank"><img loading="lazy" src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><span>{{{{.name}}}}<br/>Beschreibung: {{{{.description}}}}<br/>Größe: {{{{.size}}}}</span></a></div><br/>'
+```
 
 `imgproperties`: Hier kann man optional eine Liste zusätzlicher Bildeigenschaften hinterlegen. Bei der Generierung wird dann im Bildordner eine Datei `_content.yaml` angelegt. Diese enthält pro Bild dann die entsprechenden Eigenschaften.
 

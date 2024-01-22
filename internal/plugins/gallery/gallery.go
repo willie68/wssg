@@ -42,6 +42,7 @@ type Gallery struct {
 	width         int
 	force         bool
 	crop          bool
+	fluid         bool
 	imgFolder     string
 	dstFolder     string
 	images        []img
@@ -102,6 +103,10 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	if genCnf, ok := pg.Cnf["generator"].(config.Generate); ok {
 		g.force = genCnf.Force
 	}
+	g.fluid = false
+	if c, ok := pg.Cnf["fluid"].(bool); ok {
+		g.fluid = c
+	}
 
 	g.log.Info("generating thumbs")
 
@@ -144,6 +149,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	// extract md
 	res, err := mdtohtml.New().CreateBody(content, pg)
 	res.Style = templates.GalleryStyle
+	if g.fluid {
+		res.Style = templates.GalleryFluidStyle
+	}
 	res.Script = ""
 	if err != nil {
 		return nil, err
@@ -153,9 +161,11 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 func (g *Gallery) writeImageHTMLList() (string, error) {
 	var b bytes.Buffer
-	_, err := b.WriteString("<div class=\"galrow\">\r\n  <div class=\"galcolumn\">\r\n")
-	if err != nil {
-		return "", err
+	if g.fluid {
+		_, err := b.WriteString("<div class=\"galrow\">\r\n  <div class=\"galcolumn\">\r\n")
+		if err != nil {
+			return "", err
+		}
 	}
 	imgCnt := float64(len(g.images))
 	for x, i := range g.images {
@@ -178,20 +188,18 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		_, err = b.WriteString("\r\n")
-		if err != nil {
-			return "", err
-		}
-		if (x == int(imgCnt/3.0)-1) || (x == int(imgCnt*2.0/3.0)-1) {
+		if g.fluid && ((x == int(imgCnt/3.0)-1) || (x == int(imgCnt*2.0/3.0)-1)) {
 			_, err := b.WriteString("  </div>\r\n  <div class=\"galcolumn\">\r\n")
 			if err != nil {
 				return "", err
 			}
 		}
 	}
-	_, err = b.WriteString("  </div>\r\n</div>\r\n")
-	if err != nil {
-		return "", err
+	if g.fluid {
+		_, err := b.WriteString("  </div>\r\n</div>\r\n")
+		if err != nil {
+			return "", err
+		}
 	}
 	return b.String(), nil
 }

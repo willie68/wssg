@@ -10,9 +10,4 @@ var (
 	LayoutHTML string
 	//go:embed reload.js
 	AutoreloadJS string
-
-	//go:embed gallery/page.md
-	GalleryPage string
-	//go:embed gallery/style.css
-	GalleryStyle string
 )
