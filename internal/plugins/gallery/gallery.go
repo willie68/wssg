@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"html/template"
 	"image"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"sync"
 	txttpl "text/template"
 
@@ -132,8 +134,12 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	if err != nil {
 		return nil, err
 	}
-
-	imagesHTML, err := g.writeImageHTMLList()
+	var imagesHTML string
+	if g.fluid {
+		imagesHTML, err = g.writeFluidImageHTMLList()
+	} else {
+		imagesHTML, err = g.writeImageHTMLList()
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -161,14 +167,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 func (g *Gallery) writeImageHTMLList() (string, error) {
 	var b bytes.Buffer
-	if g.fluid {
-		_, err := b.WriteString("<div class=\"galrow\">\r\n  <div class=\"galcolumn\">\r\n")
-		if err != nil {
-			return "", err
-		}
-	}
-	imgCnt := float64(len(g.images))
-	for x, i := range g.images {
+	for _, i := range g.images {
 		m := make(map[string]string)
 		m["name"] = utils.FileNameWOExt(i.Name)
 		m["source"] = fmt.Sprintf("images/%s", i.Source)
@@ -188,18 +187,58 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if g.fluid && ((x == int(imgCnt/3.0)-1) || (x == int(imgCnt*2.0/3.0)-1)) {
-			_, err := b.WriteString("  </div>\r\n  <div class=\"galcolumn\">\r\n")
+	}
+	return b.String(), nil
+}
+
+func (g *Gallery) writeFluidImageHTMLList() (string, error) {
+	colCount := 3
+
+	orderedImgs := make([][]int, 0)
+	for i := 0; i < colCount; i++ {
+		orderedImgs = append(orderedImgs, make([]int, 0))
+	}
+	for i, _ := range g.images {
+		x := i % colCount
+		orderedImgs[x] = append(orderedImgs[x], i)
+	}
+
+	var b bytes.Buffer
+	_, err := b.WriteString("<div class=\"galrow\">\r\n  <div class=\"galcolumn\">\r\n")
+	if err != nil {
+		return "", err
+	}
+	for x := range orderedImgs {
+		for y := range orderedImgs[x] {
+			img := g.images[orderedImgs[x][y]]
+			m := make(map[string]string)
+			m["name"] = utils.FileNameWOExt(img.Name)
+			m["source"] = fmt.Sprintf("images/%s", img.Source)
+			m["thumbnail"] = fmt.Sprintf("images/%s", img.Thumbnail)
+			m["sizebytes"] = fmt.Sprintf("%d", img.Size)
+			m["size"] = utils.ByteCountBinary(img.Size)
+			for k, v := range img.UserProperties {
+				m[k] = v
+			}
+
+			var bb bytes.Buffer
+			err := g.templateImage.Execute(&bb, m)
+			if err != nil {
+				return "", err
+			}
+			_, err = b.WriteString(bb.String())
 			if err != nil {
 				return "", err
 			}
 		}
-	}
-	if g.fluid {
-		_, err := b.WriteString("  </div>\r\n</div>\r\n")
+		_, err := b.WriteString("  </div>\r\n  <div class=\"galcolumn\">\r\n")
 		if err != nil {
 			return "", err
 		}
+	}
+	_, err = b.WriteString("  </div>\r\n</div>\r\n")
+	if err != nil {
+		return "", err
 	}
 	return b.String(), nil
 }
@@ -245,11 +284,15 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 	if err != nil {
 		return nil, err
 	}
-	images := make([]img, 0)
+	imgs = g.filterAllowedImages(imgs)
+	// First sort all images after name
+	slices.SortFunc(imgs, func(a, b fs.DirEntry) int {
+		return strings.Compare(a.Name(), b.Name())
+	})
+	// Than check if there is another sort order given
+	order := utils.ConvertArrIntToArrString(g.cnf["order"])
+	images := make([]img, len(order))
 	for _, de := range imgs {
-		if !slices.Contains(exts, filepath.Ext(de.Name())) {
-			continue
-		}
 		name := utils.FileNameWOExt(de.Name())
 		thb := fmt.Sprintf("%s_thb.png", name)
 		info, err := de.Info()
@@ -267,15 +310,32 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 			Size:           size,
 			UserProperties: getUserproperties(props, imageDescriptions, name),
 		}
+		if slices.Contains(order, name) {
+			pos := slices.Index(order, name)
+			images[pos] = i
+			continue
+		}
 		images = append(images, i)
 	}
-	if len(props) > 0 {
-		err = g.writeImageDescription(g.imgFolder, imageDescriptions)
-		if err != nil {
-			return nil, err
-		}
+	err = g.writeImageDescription(g.imgFolder, imageDescriptions)
+	if err != nil {
+		return nil, err
 	}
 	return images, nil
+}
+
+func (g *Gallery) filterAllowedImages(imgs []fs.DirEntry) []fs.DirEntry {
+	res := make([]fs.DirEntry, 0)
+	for _, img := range imgs {
+		if !slices.Contains(exts, filepath.Ext(img.Name())) {
+			continue
+		}
+		if strings.HasPrefix(img.Name(), "_") || strings.HasPrefix(img.Name(), ".") {
+			continue
+		}
+		res = append(res, img)
+	}
+	return res
 }
 
 func getUserproperties(props []string, imageDescriptions config.General, name string) map[string]string {
