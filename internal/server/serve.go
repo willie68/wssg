@@ -96,6 +96,12 @@ func (s *Server) doEvent() {
 			if event.Has(fsnotify.Write) {
 				s.generate(event.Name)
 			}
+			absPath, err := filepath.Abs(event.Name)
+			if err == nil && s.output == absPath {
+				if event.Has(fsnotify.Remove) {
+					s.generate(event.Name)
+				}
+			}
 		case err, ok := <-s.watcher.Errors:
 			if !ok {
 				return

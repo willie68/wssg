@@ -158,6 +158,10 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	if g.fluid {
 		res.Style = templates.GalleryFluidStyle
 	}
+	style, ok := pg.Cnf["style"].(string)
+	if ok && style != "" {
+		res.Style = style
+	}
 	res.Script = ""
 	if err != nil {
 		return nil, err
@@ -167,23 +171,15 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 func (g *Gallery) writeImageHTMLList() (string, error) {
 	var b bytes.Buffer
-	for _, i := range g.images {
-		m := make(map[string]string)
-		m["name"] = utils.FileNameWOExt(i.Name)
-		m["source"] = fmt.Sprintf("images/%s", i.Source)
-		m["thumbnail"] = fmt.Sprintf("images/%s", i.Thumbnail)
-		m["sizebytes"] = fmt.Sprintf("%d", i.Size)
-		m["size"] = utils.ByteCountBinary(i.Size)
-		for k, v := range i.UserProperties {
-			m[k] = v
-		}
+	for _, ig := range g.images {
+		m := g.makeImageMap(ig)
 
 		var bb bytes.Buffer
 		err := g.templateImage.Execute(&bb, m)
 		if err != nil {
 			return "", err
 		}
-		_, err = b.WriteString(bb.String())
+		_, err = b.WriteString(bb.String() + "\r\n")
 		if err != nil {
 			return "", err
 		}
@@ -210,23 +206,14 @@ func (g *Gallery) writeFluidImageHTMLList() (string, error) {
 	}
 	for x := range orderedImgs {
 		for y := range orderedImgs[x] {
-			img := g.images[orderedImgs[x][y]]
-			m := make(map[string]string)
-			m["name"] = utils.FileNameWOExt(img.Name)
-			m["source"] = fmt.Sprintf("images/%s", img.Source)
-			m["thumbnail"] = fmt.Sprintf("images/%s", img.Thumbnail)
-			m["sizebytes"] = fmt.Sprintf("%d", img.Size)
-			m["size"] = utils.ByteCountBinary(img.Size)
-			for k, v := range img.UserProperties {
-				m[k] = v
-			}
+			m := g.makeImageMap(g.images[orderedImgs[x][y]])
 
 			var bb bytes.Buffer
 			err := g.templateImage.Execute(&bb, m)
 			if err != nil {
 				return "", err
 			}
-			_, err = b.WriteString(bb.String())
+			_, err = b.WriteString(bb.String() + "\r\n")
 			if err != nil {
 				return "", err
 			}
@@ -257,6 +244,20 @@ func (g *Gallery) generateThumbs() {
 		}()
 	}
 	wg.Wait()
+}
+
+func (g *Gallery) makeImageMap(i img) map[string]string {
+	m := make(map[string]string)
+	m["name"] = utils.FileNameWOExt(i.Name)
+	m["source"] = fmt.Sprintf("images/%s", i.Source)
+	m["thumbnail"] = fmt.Sprintf("images/%s", i.Thumbnail)
+	m["sizebytes"] = fmt.Sprintf("%d", i.Size)
+	m["size"] = utils.ByteCountBinary(i.Size)
+	m["thumbswidth"] = fmt.Sprintf("%d", g.width)
+	for k, v := range i.UserProperties {
+		m[k] = v
+	}
+	return m
 }
 
 func (g *Gallery) ensureImageCopy() error {

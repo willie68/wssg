@@ -14,14 +14,14 @@
     margin-top: 8px;
     vertical-align: middle;
     width: 100%;
-    filter: grayscale(1) brightness(0.5);
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s linear;
-  }
-
-  .galcolumn img:hover {
     filter: grayscale(0);
+  }
+  
+  .galcolumn img:hover {
+    filter: grayscale(1) brightness(0.5);
   }
 
   @media screen and (max-width: 700px) {

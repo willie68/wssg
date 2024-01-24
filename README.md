@@ -178,6 +178,7 @@ imgproperties:
   - tags
 imagecontainer: '{{`{{.images}}`}}'
 imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:280px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>Beschreibung: {{`{{.description}}`}}<br/>Größe: {{`{{.size}}`}}</p></a></div><br/>'
+style: 'ownstyle'
 ---
 ```
 
@@ -230,6 +231,8 @@ keyname kann folgende Eigenschaften verwenden
 `.sizebytes`: ist die Dateigröße in Bytes
 
 Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei eingefügt.
+
+`style`: Hier kann man seine eigenen CSS Style definieren. Dieser wird anstatt des Defaults geladen. 
 
 # Beispiel
 
