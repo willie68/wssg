@@ -58,12 +58,12 @@ func LoadGenConfig(rootFolder string) Generate {
 	dt, err := os.ReadFile(fd)
 	if err != nil {
 		log.Errorf("can't read generator config: %v", err)
-		panic(1)
+		os.Exit(-1)
 	}
 	err = yaml.Unmarshal(dt, &GenConfig)
 	if err != nil {
 		log.Errorf("can't read generator config: %v", err)
-		panic(1)
+		os.Exit(-1)
 	}
 	siteLoaded = true
 	return GenConfig

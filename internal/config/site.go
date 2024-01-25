@@ -78,19 +78,19 @@ func LoadSite(rootFolder string) Site {
 	dt, err := os.ReadFile(fd)
 	if err != nil {
 		log.Errorf("can't read site config: %v", err)
-		panic(1)
+		os.Exit(-1)
 	}
 	// Load main parts
 	err = yaml.Unmarshal(dt, &SiteConfig)
 	if err != nil {
-		log.Errorf("can't read site config: %v", err)
-		panic(1)
+		log.Errorf("can't unmashal site config: %v", err)
+		os.Exit(-1)
 	}
 	// Load user properties
 	err = yaml.Unmarshal(dt, &SiteConfig.UserProperties)
 	if err != nil {
 		log.Errorf("can't read site config: %v", err)
-		panic(1)
+		os.Exit(-1)
 	}
 	siteLoaded = true
 	return SiteConfig
