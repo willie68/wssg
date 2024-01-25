@@ -47,13 +47,11 @@ Wenn du den internen Webserver für den schnelleren Output verwenden möchtest, 
 
 `wssg serve`
 
- Jetzt wird zunächst die Webseite neu generiert und dann ein Webserver gestartet. Unter
+ Jetzt wird zunächst die Webseite neu generiert und dann ein Webserver gestartet. Danach wird automatisch die neu generierte Webseite auf 
 
 http://localhost:8080/ 
 
-kannst du dir das Ergebnis anschauen. Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Änderung wird automatisch vom `wssg` registriert und die Seiten entsprechend upgedated. Ein einfaches F5 im Browser reicht, um dir das Ergebnis deiner Änderungen anzuschauen. Änderungen im Ordner `.wssg` werden **nicht** automatisch berücksichtigt. Dazu muss auch eine Änderung an einer anderen Datei (außerhalb des `.wssg` Ordners) erfolgen. 
-
-Der Inhalt der `generate.yaml` wird nur beim Start des Server ausgewertet.
+aufgerufen. Hier kannst du dir das Ergebnis anschauen. Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Änderung wird automatisch vom `wssg` registriert und die Seiten entsprechend upgedated. Der Browser aktualisiert sich im Sekundentakt selber. Im Ordner `.wssg` werden Änderungen an `siteconfig.yaml` und `generate.yaml` **nicht** automatisch berücksichtigt. Änderungen an der `layout.html` werden jedoch berücksichtigt. Auch das Löschen des `output` Ordners, wo die generierten Daten abgelegt werden, triggert eine neue Generierung.
 
 # Aufbau
 
