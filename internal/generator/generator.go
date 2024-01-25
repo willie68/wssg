@@ -42,8 +42,13 @@ type Generator struct {
 
 // New creates a new initialised generator
 func New(rootFolder string, force bool) Generator {
+	root, err := filepath.Abs(rootFolder)
+	if err != nil {
+		logging.Root.Errorf("wrong format for root folder: %s \r\n %v", rootFolder, err)
+		panic(1)
+	}
 	g := Generator{
-		rootFolder: rootFolder,
+		rootFolder: root,
 		force:      force,
 		log:        logging.New().WithName("generator"),
 	}
