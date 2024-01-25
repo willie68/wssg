@@ -163,8 +163,6 @@ func (s *Server) Serve() error {
 	return http.ListenAndServe(":8080", nil)
 }
 
-// https://stackoverflow.com/questions/39320371/how-start-web-server-to-open-page-in-browser-in-golang
-// open opens the specified URL in the default browser of the user.
 func open(url string) error {
 	var cmd string
 	var args []string
