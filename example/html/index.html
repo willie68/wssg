@@ -1,4 +1,21 @@
-<p>this is a simple html file, without any headers. But i can use some very cool variables, like <br/>
-{{.title}} <br/>
-{{.page.URLPath}} <br/>
+<p>Dies ist eine einfache html Datei, ohne Header, Footer usw. Allerdings kann man auf die verschiedenen Eigenschaften zugreifen, wie z.B.<br/>
+<div style=" text-align: left">
+    <table style=" margin-left: auto;margin-right: auto;  border: 1px solid black; border-collapse: collapse;">
+        <thead><th width="200px">Name</th><th width="200px">Makro</th><th>Inhalt</th></thead>
+        <tr style="border: 1px solid black; border-collapse: collapse;"><td colspan="3"><b>Makros der einzelnen Seite</b></td></tr>
+        <tr><td>Seitentitel</td><td>{{"{{.title}}"}}</td><td>{{.title}}</td></tr>
+        <tr><td>Url der Seite</td><td>{{"{{.page.URLPath}}"}}</td><td>{{.page.URLPath}}</td></tr>
+        <tr><td>Seitenname</td><td>{{"{{.name}}"}}</td><td>{{.name}}</td></tr>
+        <tr style="border: 1px solid black; border-collapse: collapse;"><td colspan="3"><b>Makros des Bereichs</b></td></tr>
+        <tr><td>Name</td><td>{{"{{.section.name}}"}}</td><td>{{.section.name}}</td></tr>
+        <tr><td>Titel</td><td>{{"{{.section.title}}"}}</td><td>{{.section.title}}</td></tr>
+        <tr style="border: 1px solid black; border-collapse: collapse;"><td colspan="3"><b>Makros der Webseite</b></td></tr>
+        <tr><td>Url der Webseite</td><td>{{"{{.baseurl}}"}}</td><td>{{.baseurl}}</td></tr>
+        <tr><td>Titel der Webseite</td><td>{{"{{.site.Title}}"}}</td><td>{{.site.Title}}</td></tr>
+        <tr><td>Keywords</td><td>{{"{{.site.Keywords}}"}}</td><td>{{.site.Keywords}}</td></tr>
+        <tr><td>Sprache</td><td>{{"{{.site.Language}}"}}</td><td>{{.site.Language}}</td></tr>
+        <tr><td>Beschreibung</td><td>{{"{{.site.Description}}"}}</td><td>{{.site.Description}}</td></tr>
+        <tr><td></td><td>{{""}}</td><td></td></tr>
+    </table>
+</div>
 </p>
