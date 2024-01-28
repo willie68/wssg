@@ -8,7 +8,7 @@ require (
 	github.com/anthonynsimon/bild v0.13.0
 	github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a
 	github.com/fsnotify/fsnotify v1.7.0
-	github.com/gomarkdown/markdown v0.0.0-20231115200524-a660076da3fd
+	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
 	github.com/spf13/cobra v1.8.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
