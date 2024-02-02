@@ -86,7 +86,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 		return nil, err
 	}
 	g.images = imgs
-	g.dstFolder = filepath.Join(pg.DestFolder, "images")
+	g.dstFolder = filepath.Join(pg.DestFolder, "images", pg.Name)
 	err = g.ensureImageCopy()
 	if err != nil {
 		return nil, err
@@ -136,9 +136,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 	var imagesHTML string
 	if g.fluid {
-		imagesHTML, err = g.writeFluidImageHTMLList()
+		imagesHTML, err = g.writeFluidImageHTMLList(pg.Name)
 	} else {
-		imagesHTML, err = g.writeImageHTMLList()
+		imagesHTML, err = g.writeImageHTMLList(pg.Name)
 	}
 	if err != nil {
 		return nil, err
@@ -169,10 +169,10 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	return res, nil
 }
 
-func (g *Gallery) writeImageHTMLList() (string, error) {
+func (g *Gallery) writeImageHTMLList(pagename string) (string, error) {
 	var b bytes.Buffer
 	for _, ig := range g.images {
-		m := g.makeImageMap(ig)
+		m := g.makeImageMap(pagename, ig)
 
 		var bb bytes.Buffer
 		err := g.templateImage.Execute(&bb, m)
@@ -187,7 +187,7 @@ func (g *Gallery) writeImageHTMLList() (string, error) {
 	return b.String(), nil
 }
 
-func (g *Gallery) writeFluidImageHTMLList() (string, error) {
+func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
 	colCount := 3
 
 	orderedImgs := make([][]int, 0)
@@ -206,7 +206,7 @@ func (g *Gallery) writeFluidImageHTMLList() (string, error) {
 	}
 	for x := range orderedImgs {
 		for y := range orderedImgs[x] {
-			m := g.makeImageMap(g.images[orderedImgs[x][y]])
+			m := g.makeImageMap(pagename, g.images[orderedImgs[x][y]])
 
 			var bb bytes.Buffer
 			err := g.templateImage.Execute(&bb, m)
@@ -246,11 +246,11 @@ func (g *Gallery) generateThumbs() {
 	wg.Wait()
 }
 
-func (g *Gallery) makeImageMap(i img) map[string]string {
+func (g *Gallery) makeImageMap(pagename string, i img) map[string]string {
 	m := make(map[string]string)
 	m["name"] = utils.FileNameWOExt(i.Name)
-	m["source"] = fmt.Sprintf("images/%s", i.Source)
-	m["thumbnail"] = fmt.Sprintf("images/%s", i.Thumbnail)
+	m["source"] = fmt.Sprintf("images/%s/%s", pagename, i.Source)
+	m["thumbnail"] = fmt.Sprintf("images/%s/%s", pagename, i.Thumbnail)
 	m["sizebytes"] = fmt.Sprintf("%d", i.Size)
 	m["size"] = utils.ByteCountBinary(i.Size)
 	m["thumbswidth"] = fmt.Sprintf("%d", g.width)
