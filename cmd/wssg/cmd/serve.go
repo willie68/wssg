@@ -16,19 +16,21 @@ var serveCmd = &cobra.Command{
 	Short: "auto generate, watch and start a http server on port 8080",
 	Long:  `auto generate, watch and start a http server on port 8080`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return Serve(rootFolder)
+		force, _ := cmd.Flags().GetBool("force")
+		return Serve(rootFolder, force)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
+	serveCmd.Flags().BoolP("force", "f", false, "force build. Unchanged page content will be overwritten.")
 }
 
 // Serve starting a local http server serving the generated files
-func Serve(rootFolder string) error {
+func Serve(rootFolder string, force bool) error {
 	log := logging.New().WithName("serve")
 	log.Info("generate web site")
-	gen := generator.New(rootFolder, true)
+	gen := generator.New(rootFolder, force)
 	gen.WithAutoreload()
 	err := gen.Execute()
 	if err != nil {
