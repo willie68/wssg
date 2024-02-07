@@ -6,11 +6,13 @@ Willie's Static Site Generator
 
 Darum. Ich finde jeder Programmierer sollte so ein paar Sachen mal programmiert haben. Hello World, Sortieralgorithmus, Datenbank, Website Generator. Letzterer fehlte mir noch.
 
+Und da ich gerade eine einfache Seite für einen Freund bauen sollte, die er später auch selber pflegen kann, kam ich auf diese Idee. Natürlich habe ich erst andere Generatoren ausprobiert. Ganz viele waren vor allem für ein Thema Blogs, Blogs und nochmal Blogs. Aber ich wollte keinen Blog, ich wollte einfach ein paar einfache Seiten am besten als markdown mit ein paar Bildern, mehr nicht. Ich wollte keine neue Verzeichnisstruktur lernen, einfach ein Verzeichnis erzeugen, Dateien reinlegen, oder noch besser nur editieren, weil die Dateien schon da sind. Evtl. noch das LAyout anpassen und schon hat man seine statische Seite.  
+
 # Basis
 
 wssg ist ein kleiner feiner Websitegenerator mit folgenden Features (wenn er denn fertig ist, und was ist schon fertig...)
 
-- Basis sind Markdown-Dateien
+- Basis sind Markdown-Dateien, evtl. auch HTML
 - automatische Indexerstellung
 - eingebauter WebServer zum besseren Testen der Site
 - austauschbare Template Engine
@@ -31,27 +33,25 @@ Zum Testen ob alles funktioniert gibt einfach `wssg version` ein.
 
 # Quickstart
 
-Für den schnellen Start mit dem `wssg` wird zunächst eine Installation vorausgesetzt.
+Für den schnellen Start mit dem `wssg` wird zunächst eine [Installation](#Installation) vorausgesetzt.
 
 Als erstes erzeugen wir uns eine neue Site. 
 
 `wssg init ./<sitename>`
 
-Jetzt wird automatisch ein Verzeichnis mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch wird direkt die erste Seite (index.md) mit erzeugt.
+Jetzt wird automatisch ein Verzeichnis mit dem Namen <sitename> erzeugt und dort dann alle wichtigen Konfiguration erzeugt. Auch die erste Seite (index.md) wird direkt mit erzeugt.
 
-`wssg generate`  
+Wechsele in das neu erzeugt Verzeichnis.
 
-generiert nun die Website. Das Ergebnis landet automatisch im Ordner `.wssg/output`
+`cd <sitename>`
 
-Wenn du den internen Webserver für den schnelleren Output verwenden möchtest, starte diesen mit folgendem Befehl:
+`wssg generate`  generiert nun die Website. Das Ergebnis landet automatisch im Ordner `.wssg/output`
 
-`wssg serve`
-
- Jetzt wird zunächst die Webseite neu generiert und dann ein Webserver gestartet. Danach wird automatisch die neu generierte Webseite auf 
+MIt `wssg serve` startest du den internen Webserver. Dieser generiert zunächst deine Seite und startet dann automatisch deinen Browser. Jetzt kannst du das Ergebnis direkt im Browser betrachten. Oder du rufst selber die generierte Webseite auf 
 
 http://localhost:8080/ 
 
-aufgerufen. Hier kannst du dir das Ergebnis anschauen. Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Änderung wird automatisch vom `wssg` registriert und die Seiten entsprechend upgedated. Der Browser aktualisiert sich im Sekundentakt selber. Im Ordner `.wssg` werden Änderungen an `siteconfig.yaml` und `generate.yaml` **nicht** automatisch berücksichtigt. Änderungen an der `layout.html` werden jedoch berücksichtigt. Auch das Löschen des `output` Ordners, wo die generierten Daten abgelegt werden, triggert eine neue Generierung.
+Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Änderung wird automatisch vom `wssg` registriert und die Seiten entsprechend upgedated. Der Browser aktualisiert sich im Sekundentakt selber. Im Ordner `.wssg` werden Änderungen an `siteconfig.yaml` und `generate.yaml` **nicht** automatisch berücksichtigt. Änderungen an der `layout.html` werden jedoch berücksichtigt. Das Löschen des `output` Ordners, wo die generierten Daten abgelegt werden, triggert eine komplette neue Generierung.
 
 # Aufbau
 
@@ -95,7 +95,7 @@ Die Eigenschaften sind eigentlich selbsterklärend. Alle Eigenschaften stehen au
 
 ## Frontmatter für Markdown
 
-Die Markdown-Dateien sollten den Inhalt sollten mit einem Frontmatter Bereich starten. Dieser startet am Anfag der Datei mit `---` und endet ebenfalls mit `---`. Dazwischen steht ein Bereich mit Optionen für die aktuelle Seite im yaml Format:
+Die Markdown-Dateien sollten den Inhalt sollten mit einem Frontmatter Bereich starten. Dieser startet am Anfang der Datei mit `---` und endet ebenfalls mit `---`. Dazwischen steht ein Bereich mit Optionen für die aktuelle Seite im yaml Format:
 
 ```yaml
 ---
@@ -110,11 +110,11 @@ order: 10
 
 `processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `markdown`, `gallery` und `plain` zur Verfügung. 
 
-`title`: Der Seitentitel. Hier können auch Sonderzeichen verwendet werden.
+`title`: Der Seitentitel für die Anzeige z.B. in Menüs. Hier können auch Sonderzeichen verwendet werden.
 
 `order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. So kann man später neue Seite bei 15, 25 usw. einfügen.
 
-Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Prozessor definiert werden.  Oder auch nur von der eigenen Seite.
+Es können weitere Parameter angegeben werden, die von den jeweiligen layout/Plugin/Prozessor definiert werden.  Oder auch nur von der eigenen Seite.
 
 ## Variablen für eine Seite
 
@@ -122,11 +122,11 @@ Es können weitere Parameter angegeben werden, die von den jeweiligen Plugin/Pro
 
 `{{.site.#}}` sind die Einstellungen für die gesamte Website. Hier stehen 1:1 alle Einstellungen aus der `siteconfig.yaml`. Beispielsweise  
 
-`{{.site.Language}}` ergibt die Sprache
+`{{.site.Language}}` ergibt z.B. die Sprache oder 
 
 `{{.site.Title}}` den Webseitentitel. Ebenso funktionieren `{{.site.Description}}` und `{{.site.Keywords}}`
 
-Unter `{{.site.Userproperties}}` stehen alle unbekannten Parameter zur Verfügung. Diese können von dem HTML Template definiert werden. Als Beispiel dient der `font` Parameter. Will man also den in der Seitenkonfiguration angegeben Font verwenden, gelingt das mit `{{.site.UserProperties.font}}`. Diese Userproperties werden auch als Defaults für Bereiche- und Seitenkonfigurationen verwendet. Weitere bereits definierte Userproperties: socialmedia oder webcontact
+Unter `{{.site.Userproperties}}` stehen alle unbekannten Parameter zur Verfügung. Diese können von dem HTML Template verwendet werden. Als Beispiel dient der `font` Parameter. Will man also den in der Seitenkonfiguration angegeben Font verwenden, gelingt das mit `{{.site.UserProperties.font}}`. Diese Userproperties werden auch als Defaults für Bereiche- und Seitenkonfigurationen verwendet. Weitere bereits definierte Userproperties: `socialmedia` oder `webcontact`
 
 Für die aktuelle Seite sind folgende Variablen definiert:
 
