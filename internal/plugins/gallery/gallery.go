@@ -191,7 +191,7 @@ func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
 	colCount := 3
 
 	orderedImgs := make([][]int, 0)
-	for i := 0; i < colCount; i++ {
+	for range colCount {
 		orderedImgs = append(orderedImgs, make([]int, 0))
 	}
 	for i, _ := range g.images {
