@@ -291,7 +291,7 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 		return strings.Compare(a.Name(), b.Name())
 	})
 	// Than check if there is another sort order given
-	order := utils.ConvertArrIntToArrString(g.cnf["order"])
+	order := utils.ConvertArrIntToArrString(g.cnf["imageorder"])
 	images := make([]img, len(order))
 	for _, de := range imgs {
 		name := utils.FileNameWOExt(de.Name())
@@ -328,7 +328,7 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 func (g *Gallery) filterAllowedImages(imgs []fs.DirEntry) []fs.DirEntry {
 	res := make([]fs.DirEntry, 0)
 	for _, img := range imgs {
-		if !slices.Contains(exts, filepath.Ext(img.Name())) {
+		if !slices.Contains(exts, strings.ToLower(filepath.Ext(img.Name()))) {
 			continue
 		}
 		if strings.HasPrefix(img.Name(), "_") || strings.HasPrefix(img.Name(), ".") {
