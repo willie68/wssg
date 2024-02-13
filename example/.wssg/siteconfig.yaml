@@ -17,5 +17,5 @@ socialmedia:
     icon: /images/social_yt.png
     url: https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA
 cookiebanner:
-  enabled: false
-  text: ''
+  enabled: true
+  text: 'Ich brauch Kekse'

@@ -190,16 +190,14 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if err != nil {
 		return err
 	}
-	proc, ok := secCnf["processor"].(string)
-	if !ok {
-		proc = config.ProcMarkdown
-	}
+	proc := secCnf.Get("processor").Str(config.ProcMarkdown)
+
 	// process pageCnf
 	defaults := make(objx.Map)
 	name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 	title := name
 	if title == "index" {
-		title = secCnf["title"].(string)
+		title = secCnf.Get("title").String()
 	}
 	defaults["name"] = name
 	defaults["processor"] = proc
@@ -212,22 +210,19 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if err != nil {
 		return err
 	}
-	order, ok := pageCnf["order"].(int)
-	if !ok {
-		order = 0
-	}
+	order := pageCnf.Get("order").Int(0)
 	srcFolder := filepath.Dir(path)
 	sections := strings.Split(section, "/")
 	dstFolder := filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
 	pg := &model.Page{
-		Name:         pageCnf["name"].(string),
-		Title:        pageCnf["title"].(string),
+		Name:         pageCnf.Get("name").String(),
+		Title:        pageCnf.Get("title").String(),
 		Filename:     info.Name(),
 		Section:      section,
 		Path:         path,
 		Cnf:          pageCnf,
 		Order:        order,
-		Processor:    pageCnf["processor"].(string),
+		Processor:    pageCnf.Get("processor").String(),
 		SourceFolder: srcFolder,
 		DestFolder:   dstFolder,
 	}
@@ -286,9 +281,9 @@ func (g *Generator) processPage(pg model.Page) error {
 	pg.Cnf["script"] = res.Script
 	banner := ""
 	if bn, ok := pg.Cnf["cookiebanner"].(objx.Map); ok {
-		if en, ok := bn["enabled"].(bool); ok && en {
+		if bn.Get("enabled").Bool(false) {
 			banner = templates.Cookiebanner
-			if txt, ok := bn["text"].(string); !ok || txt == "" {
+			if !bn.Has("text") {
 				bn["text"] = templates.CookiebannerText
 			}
 		}

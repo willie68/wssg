@@ -103,10 +103,7 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	}
 
 	if gallery.PluginName == plugin {
-		images, ok := pageConfig["images"].(string)
-		if !ok {
-			return fmt.Errorf("gallery template broken: %v", err)
-		}
+		images := pageConfig.Get("images").String()
 		images = filepath.Join(pageFolder, images)
 		err = os.MkdirAll(images, os.ModePerm)
 		if err != nil {

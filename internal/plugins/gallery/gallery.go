@@ -71,8 +71,8 @@ func New(cnf objx.Map) plugins.Plugin {
 // CreateBody creating ths body for this gallery page
 func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, error) {
 	// getting all image file names
-	imgFld, ok := pg.Cnf["images"].(string)
-	if !ok {
+	imgFld := pg.Cnf.Get("images").String()
+	if imgFld == "" {
 		return nil, errors.New("can't determine image folder")
 	}
 	if !filepath.IsAbs(imgFld) {
@@ -94,33 +94,24 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 
 	// generating thumbs in output folder
-	g.width = 100
-	if w, ok := pg.Cnf["thumbswidth"].(int); ok {
-		g.width = w
-	}
-	g.crop = false
-	if c, ok := pg.Cnf["crop"].(bool); ok {
-		g.crop = c
-	}
+	g.width = pg.Cnf.Get("thumbswidth").Int(100)
+	g.crop = pg.Cnf.Get("crop").Bool(false)
 	g.force = false
 	if genCnf, ok := pg.Cnf["generator"].(config.Generate); ok {
 		g.force = genCnf.Force
 	}
-	g.fluid = false
-	if c, ok := pg.Cnf["fluid"].(bool); ok {
-		g.fluid = c
-	}
+	g.fluid = pg.Cnf.Get("fluid").Bool(false)
 
 	g.log.Info("generating thumbs")
 
 	g.generateThumbs()
 
 	// generating the gallery page with htmx
-	tplImgEntry, ok := pg.Cnf["imageentry"].(string)
-	if !ok {
+	tplImgEntry := pg.Cnf.Get("imageentry").String()
+	if tplImgEntry == "" {
 		var b bytes.Buffer
 		for _, property := range props {
-			b.WriteString(fmt.Sprintf(templates.ImageTag, property))
+			_, _ = b.WriteString(fmt.Sprintf(templates.ImageTag, property))
 		}
 		tplImgEntry = fmt.Sprintf(templates.ImageEntry, b.String())
 		g.log.Infof("page %s: using build in image entry template", pg.Name)
@@ -131,11 +122,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 	g.templateImage = tplImg
 
-	imgContainer, ok := pg.Cnf["imagecontainer"].(string)
-	if !ok {
-		g.log.Info("no image container given")
-		imgContainer = "{{ .images }}"
-	}
+	imgContainer := pg.Cnf.Get("imagecontainer").Str("{{ .images }}")
 	tplImgContainer, err := txttpl.New("gallerycontainer").Parse(imgContainer)
 	if err != nil {
 		return nil, err
@@ -164,10 +151,7 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	if g.fluid {
 		res.Style = templates.GalleryFluidStyle
 	}
-	style, ok := pg.Cnf["style"].(string)
-	if ok && style != "" {
-		res.Style = style
-	}
+	res.Style = pg.Cnf.Get("style").Str(res.Style)
 	res.Script = ""
 	if err != nil {
 		return nil, err
@@ -200,7 +184,7 @@ func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
 	for range colCount {
 		orderedImgs = append(orderedImgs, make([]int, 0))
 	}
-	for i, _ := range g.images {
+	for i := range g.images {
 		x := i % colCount
 		orderedImgs[x] = append(orderedImgs[x], i)
 	}
