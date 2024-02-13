@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"dario.cat/mergo"
+	"github.com/stretchr/objx"
 )
 
 const (
@@ -20,6 +21,7 @@ type Section struct {
 	Name           string `yaml:"name"`
 	Title          string `yaml:"title"`
 	Processor      string `yaml:"processor"`
+	Order          int    `yaml:"order"`
 	URLPath        string
 	UserProperties General
 }
@@ -46,6 +48,7 @@ func (s Section) General() (output General) {
 
 // G2Section convert a general struct to a section
 func G2Section(g General) Section {
+	m := objx.New(map[string]any(g))
 	up := make(General)
 	for k, v := range g {
 		use := true
@@ -58,23 +61,13 @@ func G2Section(g General) Section {
 			up[k] = v
 		}
 	}
-	name, ok := g["name"].(string)
-	if !ok {
-		name = "no name given"
-	}
-	title, ok := g["title"].(string)
-	if !ok {
-		title = "no title given"
-	}
-	proc, ok := g["processor"].(string)
-	if !ok {
-		proc = ProcMarkdown
-	}
+	name := m.Get("name").Str("no_name")
 	return Section{
 		Name:           name,
-		Title:          title,
-		Processor:      proc,
+		Title:          m.Get("title").Str("no title given"),
+		Processor:      m.Get("processor").Str(ProcMarkdown),
 		URLPath:        fmt.Sprintf("/%s", name),
+		Order:          m.Get("order").Int(0),
 		UserProperties: up,
 	}
 }

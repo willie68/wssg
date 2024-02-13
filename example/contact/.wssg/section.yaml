@@ -1,3 +1,4 @@
 processor: html
 name: contact
 title: Kontakt
+order: 40

@@ -244,3 +244,9 @@ Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei 
 # Beispiel
 
 Ein Beispiel für die Vielseitigkeit des `wssg` befindet sich im Verzeichnis `example`. Dieses kann man `wssg generate` oder `wssg serve` verwenden.
+
+# FAQ
+
+## Ordnen der Bereiche
+
+Üblicherweise werden die Bereiche automatisch nach dem Bereichsnamen sortiert. Will man eine andere Sortierung haben, kann man in jedem Bereich in der .wssg/section.yaml den Eintrag order entsprechend setzen. Auch hier spielt der absolute Wert keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Bereiche einzufügen, kann man auch 10 , 20, 30 für den Start benutzen. So kann man später neuer Bereich bei 15, 25 usw. eingefügt werden, ohne das man alle Bereichskonfigurationen ändern muss.

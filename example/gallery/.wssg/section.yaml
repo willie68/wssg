@@ -1,3 +1,4 @@
 name: gallery
 processor: markdown
 title: Gallerie
+order: 10

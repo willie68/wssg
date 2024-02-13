@@ -1,3 +1,4 @@
 name: fgallery
 processor: gallery
 title: Fluidgallerie
+order: 20

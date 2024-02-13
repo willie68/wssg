@@ -344,6 +344,9 @@ func (g *Generator) filterSortSections() []config.Section {
 	}
 	sort.Slice(sl, func(i, j int) bool {
 		// less function
+		if sl[i].Order > 0 || sl[j].Order > 0 {
+			return sl[i].Order < sl[j].Order
+		}
 		return sl[i].Name < sl[j].Name
 	})
 	return sl
