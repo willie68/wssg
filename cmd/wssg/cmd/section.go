@@ -50,13 +50,13 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 	if ok && !force {
 		return errors.New("section already exists")
 	}
-	err = os.MkdirAll(sectionFolder, 755)
+	err = os.MkdirAll(sectionFolder, 0755)
 	if err != nil {
 		return err
 	}
 	// create config folder
 	configFolder := filepath.Join(sectionFolder, config.WssgFolder)
-	err = os.MkdirAll(configFolder, 755)
+	err = os.MkdirAll(configFolder, 0755)
 	if err != nil {
 		return err
 	}

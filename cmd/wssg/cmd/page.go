@@ -158,8 +158,5 @@ func checkSection(sectionFolder string) bool {
 	}
 	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
 	ok, _ = utils.FileExists(sectionConfigFile)
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }

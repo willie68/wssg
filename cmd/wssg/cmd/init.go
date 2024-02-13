@@ -104,7 +104,7 @@ func initConfig(rootFolder string) error {
 	}
 
 	layoutHTMLFile := filepath.Join(siteConfigDir, "layout.html")
-	err = os.WriteFile(layoutHTMLFile, []byte(templates.LayoutHTML), 755)
+	err = os.WriteFile(layoutHTMLFile, []byte(templates.LayoutHTML), 0755)
 	return err
 }
 
