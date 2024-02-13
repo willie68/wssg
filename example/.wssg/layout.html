@@ -36,13 +36,13 @@
 
 <body>
   <header id="top">
-    <div style="height: 120px;">
-      <div style="float:left;height:80px;bottom: 0px;margin-left: 8px; text-align: center;">
-        <p style="font-family: {{.site.UserProperties.font}};font-size:40px; margin-top:20px"><a href="/index.html"><img style="vertical-align: middle;margin-right:16px;" src="/images/logo.png" width="80px">{{ .site.Title}}</a></p>
+    <div style="height: 160px;">
+      <div style="float:left;height:160px;bottom: 0px;margin-left: 8px; text-align: left;">
+        <p style="font-family: {{.site.UserProperties.font}};font-size:40px; margin-top:16px"><a href="/index.html"><img style="vertical-align: middle;margin-right:16px;" src="/images/logo.png" width="80px">{{ .site.Title}}</a></p>
         <p style="font-family: {{.site.UserProperties.font}};font-size:22px;">{{ .site.Description}}</p>
       </div>
       {{$pagename := .page.Name}}
-      <div style="float:right;height:80px;bottom: 0px;margin-right: 16px;">
+      <div style="float:right;height:160px;bottom: 0px;margin-right: 16px;">
         <div style="bottom:0px;">
           <p style="font-family: {{.site.UserProperties.font}};font-size:28px;">
             {{range $id, $el := .sections}}{{ if gt $id 0}} | {{end}} <a href="{{.URLPath}}">{{.Title}}</a>{{end}}
@@ -57,7 +57,7 @@
     </div>
     <hr/>
   </header>
-  <div style="margin-top:120px;overflow: hidden;">
+  <div style="margin-top:160px;overflow: hidden;">
     <div style="text-align: center;">
       <h1>{{.page.Title}}</h1>
       {{.body}}

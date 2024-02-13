@@ -91,6 +91,8 @@ cookiebanner:
 
 Die Eigenschaften sind eigentlich selbsterklärend. Alle Eigenschaften stehen auf jeder Seite zur Verfügung und können auch von jeder Seite überschrieben werden. Zusätzlich sind diese auch unter dem Bereich "site" (nicht überschreibbar) zugreifbar. 
 
+`cookiebanner:` Mit dem cookiebanner kann eine Cookiebanner aktiviert werden. Der angegebene Text wird dann automatisch beim 1. Aufruf der Startseite eingeblendet.
+
 # Seitenaufbau
 
 ## Frontmatter für Markdown
@@ -171,12 +173,13 @@ images: 'images'
 thumbswidth: 200
 crop: true
 fluid: false
-imgproperties: 
-  - description
-  - tags
+imageproperties: [description, tags]
 imagecontainer: '{{`{{.images}}`}}'
 imageentry: '<div style="display: inline-block;overflow: hidden;width:200px;height:280px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}"><img src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><p style="margin-top: 8px;">{{`{{.name}}`}}<br/>Beschreibung: {{`{{.description}}`}}<br/>Größe: {{`{{.size}}`}}</p></a></div><br/>'
 style: 'ownstyle'
+---
+imagelist: [kumpan-electric, balazs-ketyi, ryan-ancill, theme-photos, brad-neathery, budka-damdinsuren, faizur-rehman, glenn-carstens-peters, kelly-sikkema ]
+listonly: true
 ---
 ```
 
@@ -192,7 +195,7 @@ style: 'ownstyle'
 imageentry: '<div style="display: inline-block;overflow: hidden;width:{{`{{.thumbswidth}}`}}px;padding: 5px 5px 5px 5px;"><a href="{{`{{.source}}`}}" target="_blank"><img loading="lazy" src="{{`{{.thumbnail}}`}}" alt="{{`{{.name}}`}}"><span>{{{{.name}}}}<br/>Beschreibung: {{{{.description}}}}<br/>Größe: {{{{.size}}}}</span></a></div><br/>'
 ```
 
-`imgproperties`: Hier kann man optional eine Liste zusätzlicher Bildeigenschaften hinterlegen. Bei der Generierung wird dann im Bildordner eine Datei `_content.yaml` angelegt. Diese enthält pro Bild dann die entsprechenden Eigenschaften.
+`imageproperties`: Hier kann man optional eine Liste zusätzlicher Bildeigenschaften hinterlegen. Bei der Generierung wird dann im Seitenordner eine Datei `_<seitenname>.props` angelegt. Diese enthält pro Bild dann die entsprechenden Eigenschaften. Die Datei wird automatisch generiert, wenn diese noch nicht vorhanden ist. Werden neue Bilder dem Ordner hinzugefügt, müssen diese per Hand in die Datei eingefügt werden. 
 
 ```yaml
 balazs-ketyi:
@@ -210,11 +213,13 @@ faizur-rehman:
 ...
 ```
 
-Wird ein neues Bild in den Ordner gelegt, wird bei der nächsten Generierung auch hier ein neuer Eintrag erzeugt. Vorhandene Einträge bleiben immer erhalten. Einträge für gelöschte Bilder werden derzeit nicht entfernt, aber auch nicht weiter berücksichtigt. Diese Eigenschaften können dann im `imageentry` entsprechend benutzt werden. 
+Die Eigenschaften können dann im `imageentry` als Makros benutzt werden. 
 
-`imagecontainer`: Hier kann man seinen eigenen Container um die Bilderliste definieren. An die Position des Macros `.images` kommt dann die Bilderliste.
+`imagecontainer`: (Optional) Hier kann man seinen eigenen Container um die Bilderliste definieren. An die Position des Macros `.images` kommt dann die Bilderliste.
 
-`imageentry`: Hier steht das HTML Template, welches ein einzelnes Bild darstellt. Bitte beachte: für jedes Bild wird dieses Template einmal generiert. Dabei werden auch wieder die typischen Ersetzungen gemacht. {{.title}} würde also auch hier den Seitentitel einfügen. Um auf die Eigenschaften der Datei zugreifen zu können, müssen diese zus. gekennzeichnet werden. Dazu dient der folgende Ausdruck:
+`imageentry`: (Optional) Hier steht das HTML Template, welches ein einzelnes Bild darstellt. Ist das Feld leer oder nicht vorhanden wird der Default benutzt. D.h. für jedes Bild wird zusätzlich zum Thumbnail auch der Name und die Liste von Properties generiert. Anschauen kann man sich den Default im Beispiel auf der Fluidgallerie.
+
+Bitte beachte: für jedes Bild wird dieses Template einmal generiert. Dabei werden auch wieder die typischen Ersetzungen gemacht. `{{.title}}` würde also auch hier den Seitentitel einfügen. Um auf die Eigenschaften der Datei zugreifen zu können, müssen diese zus. gekennzeichnet werden. Dazu dient der folgende Ausdruck:
 
 ```
 {{`{{.<keyname>}}`}}
@@ -231,6 +236,10 @@ keyname kann folgende Eigenschaften verwenden
 Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei eingefügt.
 
 `style`: Hier kann man seine eigenen CSS Style definieren. Dieser wird anstatt des Defaults geladen. 
+
+`imagelist:` enthält eine Liste der Dateinamen (ohne Endung). In dieser Reihenfolge werden die Bilder dann angeordnet. Zusätzliche Bilder werden dahinter hinzugefügt, falls `listonly` nicht vorhanden oder auf false gesetzt wurde.
+
+`listonly:` es werden nur die Images, die in `imagelist` stehen, verwendet. Weitere Images in dem Quellordner werden für diese Galerie ignoriert.
 
 # Beispiel
 

@@ -18,6 +18,7 @@ import (
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
+	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
@@ -79,9 +80,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 	g.imgFolder = imgFld
 
-	imgProps := pg.Cnf["imgproperties"]
+	imgProps := pg.Cnf["imageproperties"]
 	props := utils.ConvertArrIntToArrString(imgProps)
-	imgs, err := g.prepareImageList(props)
+	imgs, err := g.prepareImageList(pg, props)
 	if err != nil {
 		return nil, err
 	}
@@ -117,7 +118,12 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	// generating the gallery page with htmx
 	tplImgEntry, ok := pg.Cnf["imageentry"].(string)
 	if !ok {
-		return nil, fmt.Errorf("something wrong with the gallery imageentry on page \"%s\"", pg.Name)
+		var b bytes.Buffer
+		for _, property := range props {
+			b.WriteString(fmt.Sprintf(templates.ImageTag, property))
+		}
+		tplImgEntry = fmt.Sprintf(templates.ImageEntry, b.String())
+		g.log.Infof("page %s: using build in image entry template", pg.Name)
 	}
 	tplImg, err := template.New("galleryentry").Parse(tplImgEntry)
 	if err != nil {
@@ -276,8 +282,8 @@ func (g *Gallery) ensureImageCopy() error {
 	return nil
 }
 
-func (g *Gallery) prepareImageList(props []string) ([]img, error) {
-	imageDescriptions, err := g.readImageDescription(g.imgFolder)
+func (g *Gallery) prepareImageList(pg model.Page, props []string) ([]img, error) {
+	imageDescriptions, err := g.readImageDescription(pg.SourceFolder, pg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -291,7 +297,10 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 		return strings.Compare(a.Name(), b.Name())
 	})
 	// Than check if there is another sort order given
-	order := utils.ConvertArrIntToArrString(g.cnf["imageorder"])
+	order := utils.ConvertArrIntToArrString(g.cnf["imagelist"])
+	m := objx.New(map[string]interface{}(g.cnf))
+	listonly := m.Get("listonly").Bool(false)
+	g.log.Infof("listonly: %v", listonly)
 	images := make([]img, len(order))
 	for _, de := range imgs {
 		name := utils.FileNameWOExt(de.Name())
@@ -316,9 +325,11 @@ func (g *Gallery) prepareImageList(props []string) ([]img, error) {
 			images[pos] = i
 			continue
 		}
-		images = append(images, i)
+		if !listonly {
+			images = append(images, i)
+		}
 	}
-	err = g.writeImageDescription(g.imgFolder, imageDescriptions)
+	err = g.writeImageDescription(pg.SourceFolder, pg.Name, imageDescriptions)
 	if err != nil {
 		return nil, err
 	}
@@ -359,8 +370,11 @@ func getUserproperties(props []string, imageDescriptions config.General, name st
 	return up
 }
 
-func (g *Gallery) writeImageDescription(imgFolder string, descs config.General) error {
-	imgDescription := getImageDescriptionFile(imgFolder)
+func (g *Gallery) writeImageDescription(srcFolder, galName string, descs config.General) error {
+	imgDescription := getImageDescriptionFile(srcFolder, galName)
+	if ok, _ := utils.FileExists(imgDescription); ok {
+		return nil
+	}
 	ya, err := yaml.Marshal(descs)
 	if err != nil {
 		return err
@@ -369,10 +383,10 @@ func (g *Gallery) writeImageDescription(imgFolder string, descs config.General) 
 	return err
 }
 
-func (g *Gallery) readImageDescription(imgFolder string) (config.General, error) {
+func (g *Gallery) readImageDescription(srcFolder, galName string) (config.General, error) {
 	descs := make(config.General)
 
-	imgDescription := getImageDescriptionFile(imgFolder)
+	imgDescription := getImageDescriptionFile(srcFolder, galName)
 	if ok, _ := utils.FileExists(imgDescription); ok {
 		rd, err := os.ReadFile(imgDescription)
 		if err == nil {
@@ -385,8 +399,8 @@ func (g *Gallery) readImageDescription(imgFolder string) (config.General, error)
 	return descs, nil
 }
 
-func getImageDescriptionFile(imgFolder string) string {
-	return filepath.Join(imgFolder, "_content.yaml")
+func getImageDescriptionFile(srcFolder, galName string) string {
+	return filepath.Join(srcFolder, fmt.Sprintf("_%s.props", galName))
 }
 
 func (g *Gallery) ensureCopy(imgFolder, dstFolder, name string) error {
