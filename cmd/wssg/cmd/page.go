@@ -17,6 +17,7 @@ import (
 
 	"github.com/adrg/frontmatter"
 	"github.com/spf13/cobra"
+	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/plugins/gallery"
@@ -87,7 +88,7 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	}
 
 	// Front matters extract page config
-	var pageConfig config.General
+	var pageConfig objx.Map
 	pageTemplate := templates.PageMD
 	if gallery.PluginName == plugin {
 		pageTemplate = templates.GalleryPage
@@ -113,7 +114,7 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 		}
 	}
 	// process config
-	err = mergo.Merge(&pageConfig, config.PageDefault.General())
+	err = mergo.Merge(&pageConfig, config.PageDefault.MSA())
 	if err != nil {
 		return err
 	}
@@ -136,9 +137,9 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	return os.WriteFile(pageFile, []byte(fmt.Sprintf("---\n%s---\n%s", page.String(), rest)), 0775)
 }
 
-func buildPageDefault(name, processor string) (cnf config.General, err error) {
-	cnf = make(config.General)
-	err = mergo.Merge(&cnf, config.SiteConfig.General())
+func buildPageDefault(name, processor string) (cnf objx.Map, err error) {
+	cnf = make(objx.Map)
+	err = mergo.Merge(&cnf, config.SiteConfig.MSA())
 	if err != nil {
 		return nil, err
 	}

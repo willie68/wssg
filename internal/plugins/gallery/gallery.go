@@ -40,7 +40,7 @@ var (
 
 // Gallery struct for the processor
 type Gallery struct {
-	cnf           config.General
+	cnf           objx.Map
 	log           *logging.Logger
 	width         int
 	force         bool
@@ -61,7 +61,7 @@ type img struct {
 }
 
 // New creating a new gallery processor
-func New(cnf config.General) plugins.Plugin {
+func New(cnf objx.Map) plugins.Plugin {
 	return &Gallery{
 		cnf: cnf,
 		log: logging.New().WithName("gallery"),
@@ -298,9 +298,8 @@ func (g *Gallery) prepareImageList(pg model.Page, props []string) ([]img, error)
 	})
 	// Than check if there is another sort order given
 	order := utils.ConvertArrIntToArrString(g.cnf["imagelist"])
-	m := objx.New(map[string]interface{}(g.cnf))
-	listonly := m.Get("listonly").Bool(false)
-	g.log.Infof("listonly: %v", listonly)
+	listonly := g.cnf.Get("listonly").Bool(false)
+	g.log.Debugf("listonly: %v", listonly)
 	images := make([]img, len(order))
 	for _, de := range imgs {
 		name := utils.FileNameWOExt(de.Name())
@@ -350,7 +349,7 @@ func (g *Gallery) filterAllowedImages(imgs []fs.DirEntry) []fs.DirEntry {
 	return res
 }
 
-func getUserproperties(props []string, imageDescriptions config.General, name string) map[string]string {
+func getUserproperties(props []string, imageDescriptions objx.Map, name string) map[string]string {
 	var up map[string]string
 	if len(props) > 0 {
 		u := imageDescriptions[name]
@@ -370,7 +369,7 @@ func getUserproperties(props []string, imageDescriptions config.General, name st
 	return up
 }
 
-func (g *Gallery) writeImageDescription(srcFolder, galName string, descs config.General) error {
+func (g *Gallery) writeImageDescription(srcFolder, galName string, descs objx.Map) error {
 	imgDescription := getImageDescriptionFile(srcFolder, galName)
 	if ok, _ := utils.FileExists(imgDescription); ok {
 		return nil
@@ -383,8 +382,8 @@ func (g *Gallery) writeImageDescription(srcFolder, galName string, descs config.
 	return err
 }
 
-func (g *Gallery) readImageDescription(srcFolder, galName string) (config.General, error) {
-	descs := make(config.General)
+func (g *Gallery) readImageDescription(srcFolder, galName string) (objx.Map, error) {
+	descs := make(objx.Map)
 
 	imgDescription := getImageDescriptionFile(srcFolder, galName)
 	if ok, _ := utils.FileExists(imgDescription); ok {

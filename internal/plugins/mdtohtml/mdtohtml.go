@@ -7,7 +7,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"github.com/willie68/wssg/internal/config"
+	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/model"
 	"github.com/willie68/wssg/internal/plugins"
 )
@@ -24,7 +24,7 @@ func New() plugins.Plugin {
 // CreateBody interface method to create a html body from a markdown file
 func (m *Md2HTML) CreateBody(content []byte, _ model.Page) (*plugins.Response, error) {
 	// extract md
-	ignore := make(config.General)
+	ignore := make(objx.Map)
 	md, err := frontmatter.Parse(strings.NewReader(string(content)), &ignore)
 	if err != nil {
 		return nil, err

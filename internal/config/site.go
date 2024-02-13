@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"dario.cat/mergo"
+	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/logging"
 	"gopkg.in/yaml.v3"
 )
@@ -19,7 +20,7 @@ type Site struct {
 	Description    string `yaml:"description"`
 	Keywords       string `yaml:"keywords"`
 	Language       string `yaml:"language"`
-	UserProperties General
+	UserProperties objx.Map
 }
 
 // SiteDefault the default of the site configuration
@@ -29,7 +30,7 @@ var SiteDefault = Site{
 	Description: "a short description of this site",
 	Keywords:    "tutorial basic static website",
 	Language:    "en",
-	UserProperties: General{
+	UserProperties: objx.Map{
 		"font": "Tahoma, Verdana, sans-serif",
 		"webcontact": map[string]string{
 			"url":   "mailto:info@example.com",
@@ -96,18 +97,19 @@ func LoadSite(rootFolder string) Site {
 	return SiteConfig
 }
 
-// General converting this site config into a general map
-func (s *Site) General() (output General) {
+// MSA converting this site config into a general map
+func (s *Site) MSA() objx.Map {
 	log := logging.New().WithName("siteconfig")
-	output = make(General)
-	output["baseurl"] = s.BaseURL
-	output["title"] = s.Title
-	output["description"] = s.Description
-	output["keywords"] = s.Keywords
-	output["language"] = s.Language
+	output := objx.Map{
+		"baseurl":     s.BaseURL,
+		"title":       s.Title,
+		"description": s.Description,
+		"keywords":    s.Keywords,
+		"language":    s.Language,
+	}
 	err := mergo.Merge(&output, s.UserProperties)
 	if err != nil {
 		log.Errorf("error merging user properties: %v", err)
 	}
-	return
+	return output
 }

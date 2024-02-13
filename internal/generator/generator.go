@@ -11,6 +11,7 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/adrg/frontmatter"
+	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
@@ -33,7 +34,7 @@ type Generator struct {
 	force      bool
 	genConfig  config.Generate
 	siteConfig config.Site
-	sections   map[string]config.General
+	sections   map[string]objx.Map
 	pages      []model.Page
 	log        *logging.Logger
 	refreshed  bool
@@ -62,7 +63,7 @@ func New(rootFolder string, force bool) Generator {
 }
 
 func (g *Generator) init() {
-	g.sections = make(map[string]config.General)
+	g.sections = make(map[string]objx.Map)
 	g.siteConfig = config.LoadSite(g.rootFolder)
 	g.genConfig = config.LoadGenConfig(g.rootFolder)
 	if g.autoreload {
@@ -184,7 +185,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	}
 
 	// extract front matter yaml and md
-	pageCnf := make(config.General)
+	pageCnf := make(objx.Map)
 	_, err = frontmatter.Parse(strings.NewReader(string(dt)), &pageCnf)
 	if err != nil {
 		return err
@@ -194,7 +195,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 		proc = config.ProcMarkdown
 	}
 	// process pageCnf
-	defaults := make(config.General)
+	defaults := make(objx.Map)
 	name := strings.TrimSuffix(info.Name(), filepath.Ext(info.Name()))
 	title := name
 	if title == "index" {
@@ -284,7 +285,7 @@ func (g *Generator) processPage(pg model.Page) error {
 	pg.Cnf["style"] = res.Style
 	pg.Cnf["script"] = res.Script
 	banner := ""
-	if bn, ok := pg.Cnf["cookiebanner"].(config.General); ok {
+	if bn, ok := pg.Cnf["cookiebanner"].(objx.Map); ok {
 		if en, ok := bn["enabled"].(bool); ok && en {
 			banner = templates.Cookiebanner
 			if txt, ok := bn["text"].(string); !ok || txt == "" {
@@ -352,7 +353,7 @@ func (g *Generator) filterSortSections() []config.Section {
 	return sl
 }
 
-func (g *Generator) mergeHTML(layout string, cnf config.General) ([]byte, error) {
+func (g *Generator) mergeHTML(layout string, cnf objx.Map) ([]byte, error) {
 	// merge html template
 	tmpl, err := template.New("htmltemplate").Parse(layout)
 	if err != nil {
@@ -376,8 +377,8 @@ func (g *Generator) mergeHTML(layout string, cnf config.General) ([]byte, error)
 	return bb.Bytes(), nil
 }
 
-func (g *Generator) processPageCnf(pageCnf config.General, secCnf config.General) (config.General, error) {
-	err := mergo.Merge(&pageCnf, config.PageDefault.General())
+func (g *Generator) processPageCnf(pageCnf objx.Map, secCnf objx.Map) (objx.Map, error) {
+	err := mergo.Merge(&pageCnf, config.PageDefault.MSA())
 	if err != nil {
 		return nil, err
 	}
@@ -417,11 +418,11 @@ func (g *Generator) copy2Output(section string, path string, info os.FileInfo) e
 	return err
 }
 
-func (g *Generator) getSectionConfig(section string) config.General {
+func (g *Generator) getSectionConfig(section string) objx.Map {
 	if cnf, ok := g.sections[section]; ok {
 		return cnf
 	}
-	cnf := make(config.General)
+	cnf := make(objx.Map)
 	sections := strings.Split(section, "/")
 	sectionFile := filepath.Join(g.rootFolder, filepath.Join(sections...), config.WssgFolder, config.SectionFileName)
 	if section == "" {

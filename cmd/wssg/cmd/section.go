@@ -67,7 +67,7 @@ func CreateSection(rootFolder string, args []string, force bool) error {
 		Processor: config.ProcMarkdown,
 		URLPath:   "/",
 		Order:     0,
-	}.General()
+	}.MSA()
 	sectionConfigFile := filepath.Join(configFolder, config.SectionFileName)
 	err = utils.WriteAsYaml(sectionConfigFile, sectionDefault)
 	if err != nil {

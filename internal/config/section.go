@@ -23,7 +23,7 @@ type Section struct {
 	Processor      string `yaml:"processor"`
 	Order          int    `yaml:"order"`
 	URLPath        string
-	UserProperties General
+	UserProperties objx.Map
 }
 
 // SectionDefault the default configuration of a section, used for creating a new one
@@ -33,23 +33,23 @@ var SectionDefault = Section{
 	Processor: ProcMarkdown,
 }
 
-// General convert this section to general
-func (s Section) General() (output General) {
-	output = make(General)
-	output["name"] = s.Name
-	output["title"] = s.Title
-	output["processor"] = s.Processor
+// MSA convert this section to general
+func (s Section) MSA() objx.Map {
+	output := objx.Map{
+		"name":      s.Name,
+		"title":     s.Title,
+		"processor": s.Processor,
+	}
 	err := mergo.Merge(&output, s.UserProperties)
 	if err != nil {
 		log.Errorf("error merging user properties: %v", err)
 	}
-	return
+	return output
 }
 
 // G2Section convert a general struct to a section
-func G2Section(g General) Section {
-	m := objx.New(map[string]any(g))
-	up := make(General)
+func G2Section(g objx.Map) Section {
+	up := make(objx.Map)
 	for k, v := range g {
 		use := true
 		for _, f := range keyNames {
@@ -61,13 +61,13 @@ func G2Section(g General) Section {
 			up[k] = v
 		}
 	}
-	name := m.Get("name").Str("no_name")
+	name := g.Get("name").Str("no_name")
 	return Section{
 		Name:           name,
-		Title:          m.Get("title").Str("no title given"),
-		Processor:      m.Get("processor").Str(ProcMarkdown),
+		Title:          g.Get("title").Str("no title given"),
+		Processor:      g.Get("processor").Str(ProcMarkdown),
 		URLPath:        fmt.Sprintf("/%s", name),
-		Order:          m.Get("order").Int(0),
+		Order:          g.Get("order").Int(0),
 		UserProperties: up,
 	}
 }

@@ -1,5 +1,7 @@
 package config
 
+import "github.com/stretchr/objx"
+
 // Page the configuration of a single page, used by frontmatter
 type Page struct {
 	Title     string `yaml:"title"`
@@ -16,11 +18,11 @@ var (
 	}
 )
 
-// General converting the page sturct into a general
-func (p Page) General() (output General) {
-	output = make(General)
-	output["title"] = p.Title
-	output["name"] = p.Name
-	output["processor"] = p.Processor
-	return
+// MSA converting the page sturct into a general
+func (p Page) MSA() (output objx.Map) {
+	return objx.Map{
+		"title":     p.Title,
+		"name":      p.Name,
+		"processor": p.Processor,
+	}
 }

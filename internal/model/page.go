@@ -1,6 +1,6 @@
 package model
 
-import "github.com/willie68/wssg/internal/config"
+import "github.com/stretchr/objx"
 
 // Page this is the internal data model for a page
 type Page struct {
@@ -14,5 +14,5 @@ type Page struct {
 	Section      string
 	SourceFolder string
 	DestFolder   string
-	Cnf          config.General
+	Cnf          objx.Map
 }
