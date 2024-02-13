@@ -28,14 +28,14 @@ type Server struct {
 }
 
 // New creates a new http server with auto update capatibilities
-func New(rootFolder string, gen generator.Generator) Server {
+func New(rootFolder string, gen generator.Generator) *Server {
 	s := Server{
 		rootFolder: rootFolder,
 		log:        logging.New().WithName("server"),
 		gen:        gen,
 	}
 	s.init()
-	return s
+	return &s
 }
 
 func (s *Server) init() {
