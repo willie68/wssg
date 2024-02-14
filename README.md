@@ -247,6 +247,56 @@ Ein Beispiel für die Vielseitigkeit des `wssg` befindet sich im Verzeichnis `ex
 
 # FAQ
 
-## Ordnen der Bereiche
+## Kann ich die verschiedenen Bereich in dem Hauptmenü nach eigenen Kriterien sortieren?
 
 Üblicherweise werden die Bereiche automatisch nach dem Bereichsnamen sortiert. Will man eine andere Sortierung haben, kann man in jedem Bereich in der .wssg/section.yaml den Eintrag order entsprechend setzen. Auch hier spielt der absolute Wert keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Bereiche einzufügen, kann man auch 10 , 20, 30 für den Start benutzen. So kann man später neuer Bereich bei 15, 25 usw. eingefügt werden, ohne das man alle Bereichskonfigurationen ändern muss.
+
+## Gibt es Cookies und einen Cookiebanner?
+
+Wenn du keine speziellen Seitenscripte oder eigenes HTML verwendest, werden keine Cookies auf der Seite verwendet. Nur ein aktivierter Cookiebanner hinterlässt einen Cookie. Im Standard ist ein Cookiebanner integriert, allerdings abgeschaltet (und wird somit nicht im Ergebnis verwendet). Dieser wird aktiviert, wenn man in der .wssg/siteconfig.yaml folgenden Bereich verwendet: (ändern falls schon vorhanden)
+
+```yaml
+cookiebanner:
+ enabled: true
+ text: 'Diese Seite verwendet Cookies.'
+```
+
+In Text sollte dann ein emhr oder weniger sinnvoller Text stehen. Dieser wird in einem Bereich am Ende der Seite angezeigt. Mehr könnt ihr [hier](https://www.conductor.com/de/academy/glossar/cookies/) dazu finden. Ich verwende im Standard diese kleine Bibliothek zur Verwaltung und Anzeige: https://github.com/dobarkod/cookie-banner Der Banner wir nur beim ersten Besuch der Seite angezeigt.
+Wie das genau aussieht, kann im Example angesehen werden. 
+In jeder Seite wird dabei folgendes Template verwendet:
+
+```html
+<script type="text/javascript" id="cookiebanner"
+  src="https://cdn.jsdelivr.net/gh/dobarkod/cookie-banner@1.2.2/dist/cookiebanner.min.js"
+  data-message="{{.cookiebanner.text}}"></script>
+```
+
+Möchtest du deinen eigenen Banner verwenden, dann kannst du in der `.wssg/layout.html`  nach dem Makro `{{.cbanner}}`  suchen (am ende der Datei) und dieses mit deinem eigenen Code ersetzen. 
+
+## Kann ich Bilder in den MD Dateien verwenden?
+
+Ja aber sicher. Es gibt aber ein paar Regeln zu den Bildern. 
+
+1. Die Bilder müssen im Seitenordner, da wo alle deine Markdown Dateien liegen. Am besten wäre ein eigener Imageordner für die Bilder.
+
+2. Der Pfad zu den Bildern muss relativ vom Root-Ordner angegeben werden.
+   Beispiel (aus dem Example):  
+
+   ```markdown
+   ![licht](images/licht.jpg)
+   ```
+
+## Kann ich eigene Seiten mit HTML verwenden?
+
+Ja, du kannst HTML Dateien verwenden. Du kannst sogar Makros wie `{{.page.URLPath}}` oder `{{.site.Description}}`.  Im Example unter html (`html/index.html`) findest du mehr dazu.
+
+## Gibt es auch eine Kontaktseite?
+
+Jein, Im Beispiel gibt es eine Kontaktseite basierend auf https://web3forms.com/. Für eine Kontaktseite werden ja verschiedene Dinge benötigt. Das geht von ganz einfachen mailto- Links: 
+
+```html
+<a href="mailto:name@bla.de">Sende eine E-Mail</a>
+```
+
+, die tatschlich nur einen Mailclient auf dem Rechner des Benutzer benötigt, bis zu komplexen Formularen. Diese brauchen natürlich ein Backend, also einen Server, der die Kontaktanfragen weiter verarbeitet. Es gibt dafür viele Anbieter und dort kann man sich dann meistens eine entsprechende HTML Seite generieren lassen. 
+

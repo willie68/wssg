@@ -9,4 +9,4 @@ Meine Name ist Bulb, Edison Bulb. Und ich will hier weg.
 
 {{.site.BaseURL}}
 
- ![licht](licht.jpg)
+ ![licht](images/licht.jpg)
