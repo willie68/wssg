@@ -300,3 +300,30 @@ Jein, Im Beispiel gibt es eine Kontaktseite basierend auf https://web3forms.com/
 
 , die tatschlich nur einen Mailclient auf dem Rechner des Benutzer benötigt, bis zu komplexen Formularen. Diese brauchen natürlich ein Backend, also einen Server, der die Kontaktanfragen weiter verarbeitet. Es gibt dafür viele Anbieter und dort kann man sich dann meistens eine entsprechende HTML Seite generieren lassen. 
 
+## Serv meldet Fehler in Galerie, was kann ich tun?
+
+Serv meldet folgender Fehler und die Seite wird nicht aktualisiert.
+
+```text
+2024/02/14 11:26:23 Error: generator: error processing site: &{%!V(string=yaml: line 14: mapping values are not allowed in this context)}
+2024/02/14 11:26:23 Error: server: error generate site: yaml: line 14: mapping values are not allowed in this context
+```
+
+Meistens wird das Problem durch ein Sonderzeichen in einem der Properties ausgelöst.
+
+Hier steht z.B. ein Duppelpunkt in der description.
+
+```yaml
+upl-40:
+    description: Größen: 7x10cm, 12x12cm, 13x15cm, 17x17cm, 27x30cm
+    title: Stoffbeutelchen
+```
+
+Lösung ist einfach den ganzen Eintrag in Doppelte Hochkommata setzen.
+
+```yaml
+upl-40:
+    description: "Größen: 7x10cm, 12x12cm, 13x15cm, 17x17cm, 27x30cm"
+    title: Stoffbeutelchen
+```
+
