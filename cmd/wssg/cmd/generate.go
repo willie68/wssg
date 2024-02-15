@@ -15,8 +15,8 @@ var generateCmd = &cobra.Command{
 	Long:  `generate the web site`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		force, _ := cmd.Flags().GetBool("force")
-		clean, _ := cmd.Flags().GetBool("force")
-		return Generate(rootFolder, force, clean)
+		clear, _ := cmd.Flags().GetBool("force")
+		return Generate(rootFolder, force, clear)
 	},
 }
 
@@ -28,9 +28,9 @@ func init() {
 }
 
 // Generate creates a new generator and generate the whole site
-func Generate(rootFolder string, force, clean bool) error {
+func Generate(rootFolder string, force, clear bool) error {
 	gen := generator.New(rootFolder, force)
-	if clean {
+	if clear {
 		gen.ClearOutput()
 	}
 	return gen.Execute()
