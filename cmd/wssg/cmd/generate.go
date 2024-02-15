@@ -31,7 +31,7 @@ func init() {
 func Generate(rootFolder string, force, clean bool) error {
 	gen := generator.New(rootFolder, force)
 	if clean {
-		gen.CleanOutput()
+		gen.ClearOutput()
 	}
 	return gen.Execute()
 }

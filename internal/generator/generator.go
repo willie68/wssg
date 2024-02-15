@@ -86,8 +86,8 @@ func (g *Generator) init() {
 	g.genConfig.Force = g.force
 }
 
-// CleanOutput clean the output folder
-func (g *Generator) CleanOutput() {
+// ClearOutput clean the output folder
+func (g *Generator) ClearOutput() {
 	destPath := filepath.Join(g.rootFolder, g.genConfig.Output)
 	err := os.RemoveAll(destPath)
 	if err != nil {

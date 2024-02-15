@@ -327,3 +327,8 @@ upl-40:
     title: Stoffbeutelchen
 ```
 
+## Kann ich den Output Ordner löschen (lassen)?
+
+Ja, wenn du gerne mal den Output Ordner löschen und neu generieren möchtest, kannst du natürlich vor dem `wssg generate` den Ordner löschen. Oder du benutzt das `-c (--clear)` Flag. Damit wird sowohl vor dem `generate` wie auch beim `serve` das Ausgabeverzeichnis (Default: `.wssg/output`) einmal gelöscht. 
+
+Du kannst auch das `output` Verzeichnis während des `wssg serve` löschen. `wssg` wird dann automatisch das `generate` ausführen.
