@@ -41,8 +41,18 @@ type Generator struct {
 	autoreload bool
 }
 
+// Option func to set a generator option
+type Option func(Generator)
+
+// WithAutoreload adapt autorelaod
+func WithAutoreload(b bool) Option {
+	return func(g Generator) {
+		g.autoreload = b
+	}
+}
+
 // New creates a new initialised generator
-func New(rootFolder string, force bool) Generator {
+func New(rootFolder string, force bool, gs ...Option) Generator {
 	root, err := filepath.Abs(rootFolder)
 	if err != nil {
 		logging.Root.Errorf("wrong format for root folder: %s \r\n %v", rootFolder, err)
@@ -57,6 +67,9 @@ func New(rootFolder string, force bool) Generator {
 		rootFolder: root,
 		force:      force,
 		log:        logging.New().WithName("generator"),
+	}
+	for _, gf := range gs {
+		gf(g)
 	}
 	g.init()
 	return g
@@ -73,9 +86,13 @@ func (g *Generator) init() {
 	g.genConfig.Force = g.force
 }
 
-// WithAutoreload adapt autorelaod
-func (g *Generator) WithAutoreload() {
-	g.autoreload = true
+// CleanOutput clean the output folder
+func (g *Generator) CleanOutput() {
+	destPath := filepath.Join(g.rootFolder, g.genConfig.Output)
+	err := os.RemoveAll(destPath)
+	if err != nil {
+		g.log.Errorf("error cleaning up the output folder: %v", err)
+	}
 }
 
 // SiteConfig return the configuration of the site
