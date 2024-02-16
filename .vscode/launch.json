@@ -47,16 +47,15 @@
       "args": [
         "new",
         "page",
-        "gallery2/index",
+        "blog/blog1",
+        "-p", "blog",
         "-f",
-        "-p",
-        "gallery",
         "-r",
         "./example"
       ]
     },
     {
-      "name": "wssg new section",
+      "name": "wssg new section plugin",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -66,7 +65,8 @@
       "args": [
         "new",
         "section",
-        "gallery2",
+        "blog",
+        "-p", "blog",
         "-f",
         "-r",
         "./example"

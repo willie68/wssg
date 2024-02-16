@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
+	"github.com/willie68/wssg/internal/plugins/blog"
 	"github.com/willie68/wssg/internal/plugins/gallery"
 	"github.com/willie68/wssg/internal/utils"
 	"github.com/willie68/wssg/templates"
@@ -73,8 +74,8 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 			return errors.New("new page can only be created in a already created section. Please create a new section before trying to create a new page. \r\n Example: wssg new section <name>")
 		}
 	}
-
-	pageFile := filepath.Join(pageFolder, fmt.Sprintf("%s.md", name))
+	pageFilename := fmt.Sprintf("%s.md", name)
+	pageFile := filepath.Join(pageFolder, pageFilename)
 	ok, err := utils.FileExists(pageFile)
 	if err != nil {
 		return err
@@ -90,8 +91,12 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	// Front matters extract page config
 	var pageConfig objx.Map
 	pageTemplate := templates.PageMD
-	if gallery.PluginName == plugin {
+	switch plugin {
+	case gallery.PluginName:
 		pageTemplate = templates.GalleryPage
+	case blog.PluginName:
+		pageTemplate = templates.BlogPage
+		err := blog.AddBlogPage(pageFolder, pageFilename)
 		if err != nil {
 			return err
 		}
@@ -102,14 +107,6 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 		return err
 	}
 
-	if gallery.PluginName == plugin {
-		images := pageConfig.Get("images").String()
-		images = filepath.Join(pageFolder, images)
-		err = os.MkdirAll(images, os.ModePerm)
-		if err != nil {
-			return err
-		}
-	}
 	// process config
 	err = mergo.Merge(&pageConfig, config.PageDefault.MSA())
 	if err != nil {
