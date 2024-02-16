@@ -95,11 +95,7 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	case gallery.PluginName:
 		pageTemplate = templates.GalleryPage
 	case blog.PluginName:
-		if name == "index" {
-			pageTemplate = templates.BlogIndex
-		} else {
-			pageTemplate = templates.BlogPage
-		}
+		pageTemplate = blog.GetPageTemplate(name)
 		cfg, err := blog.AddBlogPage(pageFolder, pageFilename)
 		if err != nil {
 			return err

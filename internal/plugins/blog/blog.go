@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/templates"
 	"gopkg.in/yaml.v3"
 )
 
@@ -21,6 +22,13 @@ const (
 type BlogEntry struct {
 	Name    string    `yaml:"name"`
 	Created time.Time `yaml:"created"`
+}
+
+func GetPageTemplate(name string) string {
+	if name == "index" {
+		return templates.BlogIndex
+	}
+	return templates.BlogPage
 }
 
 // AddBlogPage adding the new blog page to the list of pages with the actual time.
