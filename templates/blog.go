@@ -6,4 +6,6 @@ import _ "embed"
 var (
 	//go:embed blog/page.md
 	BlogPage string
+	//go:embed blog/index.md
+	BlogIndex string
 )
