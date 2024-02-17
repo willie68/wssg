@@ -7,22 +7,51 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"github.com/samber/do"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/model"
-	"github.com/willie68/wssg/internal/plugins"
+	"github.com/willie68/wssg/processors/processor"
+
+	_ "embed"
 )
 
-// Md2HTML markdown plugin for converting a markdown file to html
-type Md2HTML struct {
+// Page the page template
+var (
+	//go:embed templates/page.md
+	PageMD string
+)
+
+// Processor markdown processor for converting a markdown file to html
+type Processor struct {
 }
 
-// New create a new markdown plugin
-func New() plugins.Plugin {
-	return &Md2HTML{}
+func init() {
+	proc := New()
+	do.ProvideNamedValue[processor.Processor](nil, proc.Name(), proc)
+}
+
+// New create a new markdown processor
+func New() processor.Processor {
+	return &Processor{}
+}
+
+// Name returning the name of this processor
+func (p *Processor) Name() string {
+	return "markdown"
+}
+
+// AddPage adding the new page
+func (p *Processor) AddPage(folder, pagefile string) (m objx.Map, err error) {
+	return
+}
+
+// GetPageTemplate getting the right template for the named page
+func (p *Processor) GetPageTemplate(name string) string {
+	return PageMD
 }
 
 // CreateBody interface method to create a html body from a markdown file
-func (m *Md2HTML) CreateBody(content []byte, _ model.Page) (*plugins.Response, error) {
+func (p *Processor) CreateBody(content []byte, _ model.Page) (*processor.Response, error) {
 	// extract md
 	ignore := make(objx.Map)
 	md, err := frontmatter.Parse(strings.NewReader(string(content)), &ignore)
@@ -31,13 +60,13 @@ func (m *Md2HTML) CreateBody(content []byte, _ model.Page) (*plugins.Response, e
 	}
 	// convert md to html
 	ht := mdToHTML(md)
-	return &plugins.Response{
+	return &processor.Response{
 		Body: string(ht),
 	}, nil
 }
 
 // HTMLTemplateName returning the used html template
-func (m *Md2HTML) HTMLTemplateName() string {
+func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }
 

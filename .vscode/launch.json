@@ -16,7 +16,7 @@
       "args": [
         "init",
         "-f",
-        "./example"
+        "./example1"
       ]
     },
     {
@@ -30,14 +30,14 @@
       "args": [
         "new",
         "page",
-        "contact/index",
+        "about",
         "-f",
         "-r",
-        "./example"
+        "./example1"
       ]
     },
     {
-      "name": "wssg new page plugin",
+      "name": "wssg new page proc",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -51,11 +51,11 @@
         "-p", "blog",
         "-f",
         "-r",
-        "./example"
+        "./example1"
       ]
     },
     {
-      "name": "wssg new section plugin",
+      "name": "wssg new section proc",
       "type": "go",
       "request": "launch",
       "mode": "auto",
@@ -69,7 +69,7 @@
         "-p", "blog",
         "-f",
         "-r",
-        "./example"
+        "./example1"
       ]
     },
     {

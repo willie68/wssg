@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
-	"github.com/willie68/wssg/internal/plugins/blog"
 	"github.com/willie68/wssg/internal/utils"
 )
 
@@ -25,20 +24,20 @@ var sectionCmd = &cobra.Command{
 	some default configurations.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		force, _ := cmd.Flags().GetBool("force")
-		plugin, _ := cmd.Flags().GetString("plugin")
+		processor, _ := cmd.Flags().GetString("processor")
 
-		return CreateSection(rootFolder, plugin, args, force)
+		return CreateSection(rootFolder, processor, args, force)
 	},
 }
 
 func init() {
 	newCmd.AddCommand(sectionCmd)
 	sectionCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
-	sectionCmd.Flags().StringP("plugin", "p", "markdown", "new section with this plugin. Default is markdown.")
+	sectionCmd.Flags().StringP("processor", "p", "markdown", "new section with this processor. Default is markdown.")
 }
 
 // CreateSection Creating a new section in the site, adding .wssg folder for config and an index.md for the first page
-func CreateSection(rootFolder, plugin string, args []string, force bool) error {
+func CreateSection(rootFolder, processor string, args []string, force bool) error {
 	log := logging.New().WithName("newSection")
 	config.LoadSite(rootFolder)
 	if len(args) == 0 {
@@ -64,13 +63,7 @@ func CreateSection(rootFolder, plugin string, args []string, force bool) error {
 	if err != nil {
 		return err
 	}
-	processor := config.ProcMarkdown
-	if plugin != "" {
-		switch plugin {
-		case blog.PluginName:
-			processor = blog.PluginName
-		}
-	}
+
 	// generate default section config
 	sectionDefault := config.Section{
 		Name:      name,

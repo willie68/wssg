@@ -13,6 +13,7 @@ import (
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/processors"
 	"github.com/willie68/wssg/templates"
 )
 
@@ -109,5 +110,5 @@ func initConfig(rootFolder string) error {
 }
 
 func addIndexPage(rootFolder string) error {
-	return CreatePage(rootFolder, "index", config.ProcMarkdown, true)
+	return CreatePage(rootFolder, "index", processors.DefaultProcessor, true)
 }

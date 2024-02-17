@@ -5,6 +5,7 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/stretchr/objx"
+	"github.com/willie68/wssg/processors"
 )
 
 const (
@@ -30,7 +31,7 @@ type Section struct {
 var SectionDefault = Section{
 	Name:      "{{.name}}",
 	Title:     "{{.name}}",
-	Processor: ProcMarkdown,
+	Processor: processors.DefaultProcessor,
 }
 
 // MSA convert this section to general
@@ -65,7 +66,7 @@ func G2Section(g objx.Map) Section {
 	return Section{
 		Name:           name,
 		Title:          g.Get("title").Str("no title given"),
-		Processor:      g.Get("processor").Str(ProcMarkdown),
+		Processor:      g.Get("processor").Str(processors.DefaultProcessor),
 		URLPath:        fmt.Sprintf("/%s", name),
 		Order:          g.Get("order").Int(0),
 		UserProperties: up,

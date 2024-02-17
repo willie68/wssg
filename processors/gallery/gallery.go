@@ -14,34 +14,47 @@ import (
 	"sync"
 	txttpl "text/template"
 
+	_ "embed"
+
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/rwcarlsen/goexif/exif"
 	"github.com/rwcarlsen/goexif/tiff"
+	"github.com/samber/do"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
-	"github.com/willie68/wssg/internal/plugins"
-	"github.com/willie68/wssg/internal/plugins/mdtohtml"
 	"github.com/willie68/wssg/internal/utils"
-	"github.com/willie68/wssg/templates"
+	"github.com/willie68/wssg/processors/mdtohtml"
+	"github.com/willie68/wssg/processors/processor"
 	"gopkg.in/yaml.v3"
 )
 
-// PluginName name of this plugin
 const (
-	PluginName = "gallery"
+	ImageEntry = "<div style=\"display: inline-block;overflow: hidden;width:{{.thumbswidth}}px;padding: 5px 5px 5px 5px;\"><a href=\"{{.source}}\" target=\"_blank\"><img loading=\"lazy\" src=\"{{.thumbnail}}\" alt=\"{{.name}}\"><span>{{.name}}%s</span></a></div><br/>"
+	ImageTag   = "<br/>%[1]s: {{.%[1]s}}"
 )
 
+// Page the page template
 var (
+	//go:embed templates/page.md
+	GalleryPage string
+	//go:embed templates/style.css
+	GalleryStyle string
+	//go:embed templates/style_fluid.css
+	GalleryFluidStyle string
+
 	exts = []string{".jpeg", ".jpg", ".bmp", ".png"}
 )
 
-// Gallery struct for the processor
-type Gallery struct {
-	cnf           objx.Map
-	log           *logging.Logger
+// Processor struct for the processor
+type Processor struct {
+	log *logging.Logger
+}
+
+type galleryPage struct {
+	name          string
 	width         int
 	force         bool
 	crop          bool
@@ -60,16 +73,35 @@ type img struct {
 	UserProperties map[string]string
 }
 
+func init() {
+	proc := New()
+	do.ProvideNamedValue[processor.Processor](nil, proc.Name(), proc)
+}
+
 // New creating a new gallery processor
-func New(cnf objx.Map) plugins.Plugin {
-	return &Gallery{
-		cnf: cnf,
+func New() processor.Processor {
+	return &Processor{
 		log: logging.New().WithName("gallery"),
 	}
 }
 
+// Name returning the name of this processor
+func (p *Processor) Name() string {
+	return "gallery"
+}
+
+// AddPage adding the new page
+func (p *Processor) AddPage(folder, pagefile string) (m objx.Map, err error) {
+	return
+}
+
+// GetPageTemplate getting the right template for the named page
+func (p *Processor) GetPageTemplate(name string) string {
+	return GalleryPage
+}
+
 // CreateBody creating ths body for this gallery page
-func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, error) {
+func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Response, error) {
 	// getting all image file names
 	imgFld := pg.Cnf.Get("images").String()
 	if imgFld == "" {
@@ -78,17 +110,20 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	if !filepath.IsAbs(imgFld) {
 		imgFld = filepath.Join(pg.SourceFolder, imgFld)
 	}
+	g := galleryPage{
+		name: pg.Name,
+	}
 	g.imgFolder = imgFld
 
 	imgProps := pg.Cnf["imageproperties"]
 	props := utils.ConvertArrIntToArrString(imgProps)
-	imgs, err := g.prepareImageList(pg, props)
+	imgs, err := p.prepareImageList(pg, g, props)
 	if err != nil {
 		return nil, err
 	}
 	g.images = imgs
-	g.dstFolder = filepath.Join(pg.DestFolder, "images", pg.Name)
-	err = g.ensureImageCopy()
+	g.dstFolder = filepath.Join(pg.DestFolder, "images", g.name)
+	err = p.ensureImageCopy(g)
 	if err != nil {
 		return nil, err
 	}
@@ -102,19 +137,19 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 	g.fluid = pg.Cnf.Get("fluid").Bool(false)
 
-	g.log.Info("generating thumbs")
+	p.log.Info("generating thumbs")
 
-	g.generateThumbs()
+	p.generateThumbs(g)
 
 	// generating the gallery page with htmx
 	tplImgEntry := pg.Cnf.Get("imageentry").String()
 	if tplImgEntry == "" {
 		var b bytes.Buffer
 		for _, property := range props {
-			_, _ = b.WriteString(fmt.Sprintf(templates.ImageTag, property))
+			_, _ = b.WriteString(fmt.Sprintf(ImageTag, property))
 		}
-		tplImgEntry = fmt.Sprintf(templates.ImageEntry, b.String())
-		g.log.Infof("page %s: using build in image entry template", pg.Name)
+		tplImgEntry = fmt.Sprintf(ImageEntry, b.String())
+		p.log.Infof("page %s: using build in image entry template", pg.Name)
 	}
 	tplImg, err := template.New("galleryentry").Parse(tplImgEntry)
 	if err != nil {
@@ -129,9 +164,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	}
 	var imagesHTML string
 	if g.fluid {
-		imagesHTML, err = g.writeFluidImageHTMLList(pg.Name)
+		imagesHTML, err = p.writeFluidImageHTMLList(g)
 	} else {
-		imagesHTML, err = g.writeImageHTMLList(pg.Name)
+		imagesHTML, err = p.writeImageHTMLList(g)
 	}
 	if err != nil {
 		return nil, err
@@ -147,9 +182,9 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 
 	// extract md
 	res, err := mdtohtml.New().CreateBody(content, pg)
-	res.Style = templates.GalleryStyle
+	res.Style = GalleryStyle
 	if g.fluid {
-		res.Style = templates.GalleryFluidStyle
+		res.Style = GalleryFluidStyle
 	}
 	res.Style = pg.Cnf.Get("style").Str(res.Style)
 	res.Script = ""
@@ -159,10 +194,10 @@ func (g *Gallery) CreateBody(content []byte, pg model.Page) (*plugins.Response, 
 	return res, nil
 }
 
-func (g *Gallery) writeImageHTMLList(pagename string) (string, error) {
+func (p *Processor) writeImageHTMLList(g galleryPage) (string, error) {
 	var b bytes.Buffer
 	for _, ig := range g.images {
-		m := g.makeImageMap(pagename, ig)
+		m := p.makeImageMap(g, ig)
 
 		var bb bytes.Buffer
 		err := g.templateImage.Execute(&bb, m)
@@ -177,7 +212,7 @@ func (g *Gallery) writeImageHTMLList(pagename string) (string, error) {
 	return b.String(), nil
 }
 
-func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
+func (p *Processor) writeFluidImageHTMLList(g galleryPage) (string, error) {
 	colCount := 3
 
 	orderedImgs := make([][]int, 0)
@@ -196,7 +231,7 @@ func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
 	}
 	for x := range orderedImgs {
 		for y := range orderedImgs[x] {
-			m := g.makeImageMap(pagename, g.images[orderedImgs[x][y]])
+			m := p.makeImageMap(g, g.images[orderedImgs[x][y]])
 
 			var bb bytes.Buffer
 			err := g.templateImage.Execute(&bb, m)
@@ -220,27 +255,27 @@ func (g *Gallery) writeFluidImageHTMLList(pagename string) (string, error) {
 	return b.String(), nil
 }
 
-func (g *Gallery) generateThumbs() {
+func (p *Processor) generateThumbs(g galleryPage) {
 	var wg sync.WaitGroup
 	for _, i := range g.images {
 		wg.Add(1)
 		img := i
 		go func() {
 			defer wg.Done()
-			err := g.creatThumb(g.dstFolder, img, g.width, g.force, g.crop)
+			err := p.creatThumb(g.dstFolder, img, g.width, g.force, g.crop)
 			if err != nil {
-				g.log.Errorf("error creating thumbnail: %s, %v", img.Name, err)
+				p.log.Errorf("error creating thumbnail: %s, %v", img.Name, err)
 			}
 		}()
 	}
 	wg.Wait()
 }
 
-func (g *Gallery) makeImageMap(pagename string, i img) map[string]string {
+func (p *Processor) makeImageMap(g galleryPage, i img) map[string]string {
 	m := make(map[string]string)
 	m["name"] = utils.FileNameWOExt(i.Name)
-	m["source"] = fmt.Sprintf("images/%s/%s", pagename, i.Source)
-	m["thumbnail"] = fmt.Sprintf("images/%s/%s", pagename, i.Thumbnail)
+	m["source"] = fmt.Sprintf("images/%s/%s", g.name, i.Source)
+	m["thumbnail"] = fmt.Sprintf("images/%s/%s", g.name, i.Thumbnail)
 	m["sizebytes"] = fmt.Sprintf("%d", i.Size)
 	m["size"] = utils.ByteCountBinary(i.Size)
 	m["thumbswidth"] = fmt.Sprintf("%d", g.width)
@@ -250,7 +285,7 @@ func (g *Gallery) makeImageMap(pagename string, i img) map[string]string {
 	return m
 }
 
-func (g *Gallery) ensureImageCopy() error {
+func (p *Processor) ensureImageCopy(g galleryPage) error {
 	err := os.MkdirAll(g.dstFolder, os.ModePerm)
 	if err != nil {
 		return err
@@ -258,7 +293,7 @@ func (g *Gallery) ensureImageCopy() error {
 
 	for _, de := range g.images {
 		// copy to output folder
-		err = g.ensureCopy(g.imgFolder, g.dstFolder, de.Name)
+		err = p.ensureCopy(g.imgFolder, g.dstFolder, de.Name)
 		if err != nil {
 			return err
 		}
@@ -266,8 +301,8 @@ func (g *Gallery) ensureImageCopy() error {
 	return nil
 }
 
-func (g *Gallery) prepareImageList(pg model.Page, props []string) ([]img, error) {
-	imageDescriptions, err := g.readImageDescription(pg.SourceFolder, pg.Name)
+func (p *Processor) prepareImageList(pg model.Page, g galleryPage, props []string) ([]img, error) {
+	imageDescriptions, err := p.readImageDescription(pg.SourceFolder, pg.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -275,22 +310,22 @@ func (g *Gallery) prepareImageList(pg model.Page, props []string) ([]img, error)
 	if err != nil {
 		return nil, err
 	}
-	imgs = g.filterAllowedImages(imgs)
+	imgs = p.filterAllowedImages(imgs)
 	// First sort all images after name
 	slices.SortFunc(imgs, func(a, b fs.DirEntry) int {
 		return strings.Compare(a.Name(), b.Name())
 	})
 	// Than check if there is another sort order given
-	order := utils.ConvertArrIntToArrString(g.cnf["imagelist"])
-	listonly := g.cnf.Get("listonly").Bool(false)
-	g.log.Debugf("listonly: %v", listonly)
+	order := utils.ConvertArrIntToArrString(pg.Cnf["imagelist"])
+	listonly := pg.Cnf.Get("listonly").Bool(false)
+	p.log.Debugf("listonly: %v", listonly)
 	images := make([]img, len(order))
 	for _, de := range imgs {
 		name := utils.FileNameWOExt(de.Name())
 		thb := fmt.Sprintf("%s_thb.png", name)
 		info, err := de.Info()
 		if err != nil {
-			g.log.Errorf("can't get file info of %s: %v", de.Name(), err)
+			p.log.Errorf("can't get file info of %s: %v", de.Name(), err)
 		}
 		size := int64(0)
 		if info != nil {
@@ -312,14 +347,14 @@ func (g *Gallery) prepareImageList(pg model.Page, props []string) ([]img, error)
 			images = append(images, i)
 		}
 	}
-	err = g.writeImageDescription(pg.SourceFolder, pg.Name, imageDescriptions)
+	err = p.writeImageDescription(pg.SourceFolder, pg.Name, imageDescriptions)
 	if err != nil {
 		return nil, err
 	}
 	return images, nil
 }
 
-func (g *Gallery) filterAllowedImages(imgs []fs.DirEntry) []fs.DirEntry {
+func (p *Processor) filterAllowedImages(imgs []fs.DirEntry) []fs.DirEntry {
 	res := make([]fs.DirEntry, 0)
 	for _, img := range imgs {
 		if !slices.Contains(exts, strings.ToLower(filepath.Ext(img.Name()))) {
@@ -353,7 +388,7 @@ func getUserproperties(props []string, imageDescriptions objx.Map, name string) 
 	return up
 }
 
-func (g *Gallery) writeImageDescription(srcFolder, galName string, descs objx.Map) error {
+func (p *Processor) writeImageDescription(srcFolder, galName string, descs objx.Map) error {
 	imgDescription := getImageDescriptionFile(srcFolder, galName)
 	if ok, _ := utils.FileExists(imgDescription); ok {
 		return nil
@@ -366,7 +401,7 @@ func (g *Gallery) writeImageDescription(srcFolder, galName string, descs objx.Ma
 	return err
 }
 
-func (g *Gallery) readImageDescription(srcFolder, galName string) (objx.Map, error) {
+func (p *Processor) readImageDescription(srcFolder, galName string) (objx.Map, error) {
 	descs := make(objx.Map)
 
 	imgDescription := getImageDescriptionFile(srcFolder, galName)
@@ -386,7 +421,7 @@ func getImageDescriptionFile(srcFolder, galName string) string {
 	return filepath.Join(srcFolder, fmt.Sprintf("_%s.props", galName))
 }
 
-func (g *Gallery) ensureCopy(imgFolder, dstFolder, name string) error {
+func (p *Processor) ensureCopy(imgFolder, dstFolder, name string) error {
 	src := filepath.Join(imgFolder, name)
 	dst := filepath.Join(dstFolder, name)
 	ok, _ := utils.FileExists(dst)
@@ -400,17 +435,17 @@ func (g *Gallery) ensureCopy(imgFolder, dstFolder, name string) error {
 }
 
 // HTMLTemplateName returning the used html template
-func (g *Gallery) HTMLTemplateName() string {
+func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }
 
-func (g *Gallery) creatThumb(fld string, i img, width int, force, crop bool) error {
+func (p *Processor) creatThumb(fld string, i img, width int, force, crop bool) error {
 	dst := filepath.Join(fld, i.Thumbnail)
 	ok, _ := utils.FileExists(dst)
 	if ok && !force {
 		return nil
 	}
-	g.log.Debugf("generating thumb: %s", i.Name)
+	p.log.Debugf("generating thumb: %s", i.Name)
 	src := filepath.Join(fld, i.Source)
 
 	img, err := imgio.Open(src)

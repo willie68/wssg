@@ -16,14 +16,13 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/adrg/frontmatter"
+	"github.com/samber/do"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
-	"github.com/willie68/wssg/internal/plugins/blog"
-	"github.com/willie68/wssg/internal/plugins/gallery"
 	"github.com/willie68/wssg/internal/utils"
-	"github.com/willie68/wssg/templates"
+	"github.com/willie68/wssg/processors/processor"
 )
 
 // pageCmd represents the page command
@@ -35,12 +34,12 @@ var (
 		It automatically generates a new md file with an example config.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			force, _ := cmd.Flags().GetBool("force")
-			plugin, _ := cmd.Flags().GetString("plugin")
+			processor, _ := cmd.Flags().GetString("processor")
 			name := ""
 			if len(args) > 0 {
 				name = args[0]
 			}
-			return CreatePage(rootFolder, name, plugin, force)
+			return CreatePage(rootFolder, name, processor, force)
 		},
 	}
 )
@@ -48,11 +47,11 @@ var (
 func init() {
 	newCmd.AddCommand(pageCmd)
 	pageCmd.Flags().BoolP("force", "f", false, "force reinitialise. Page content maybe overwritten.")
-	pageCmd.Flags().StringP("plugin", "p", "markdown", "new page with this plugin. Default is markdown.")
+	pageCmd.Flags().StringP("processor", "p", "markdown", "new page with this processor. Default is markdown.")
 }
 
 // CreatePage creates a new page in the site. Name should be prefixed with sections like gallerie/index
-func CreatePage(rootFolder string, name string, plugin string, force bool) error {
+func CreatePage(rootFolder string, name string, processorName string, force bool) error {
 	log := logging.New().WithName("newPage")
 	config.LoadSite(rootFolder)
 	sections := make([]string, 0)
@@ -83,25 +82,23 @@ func CreatePage(rootFolder string, name string, plugin string, force bool) error
 	if ok && !force {
 		return errors.New("page already exists")
 	}
-	pageGenerateConfig, err := buildPageDefault(name, plugin)
+	pageGenerateConfig, err := buildPageDefault(name, processorName)
 	if err != nil {
 		return err
 	}
 
 	// Front matters extract page config
 	var pageConfig objx.Map
-	pageTemplate := templates.PageMD
-	switch plugin {
-	case gallery.PluginName:
-		pageTemplate = templates.GalleryPage
-	case blog.PluginName:
-		pageTemplate = blog.GetPageTemplate(name)
-		cfg, err := blog.AddBlogPage(pageFolder, pageFilename)
-		if err != nil {
-			return err
-		}
-		pageConfig = pageConfig.Merge(cfg)
+	proc := do.MustInvokeNamed[processor.Processor](nil, processorName)
+	if proc == nil {
+		return fmt.Errorf("unknown processor with name: %s", processorName)
 	}
+	pageTemplate := proc.GetPageTemplate(name)
+	cfg, err := proc.AddPage(pageFolder, pageFilename)
+	if err != nil {
+		return err
+	}
+	pageConfig = pageConfig.Merge(cfg)
 
 	rest, err := frontmatter.Parse(strings.NewReader(pageTemplate), &pageConfig)
 	if err != nil {

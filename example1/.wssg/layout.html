@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="{{.site.Language}}">
+
+<head>
+  <title>{{.site.Title}}</title>
+  <meta name="description" content="{{.site.Description}}">
+  <meta name="keywords" content="{{.site.Keywords}}">
+  <style>
+    a {
+      text-decoration: none;
+    }
+
+    body {
+      font-family: {{.font}};
+      background-color: #E5E4E2;
+    }
+
+    header {
+      background-color: #E5E4E2;
+      display: block;
+      position: fixed; 
+      width: 100%; 
+      top: 0;
+      z-index: 100;
+    }
+
+    footer {
+      margin-top: 12px;
+      z-index: 100;
+    }
+  </style>
+  <style>{{ .style }} </style>
+  <script>{{ .script }} </script>
+  <script>{{ .generator.Autoreload }}</script>
+</head>
+
+<body>
+  <header id="top">
+    <div style="height: 120px;">
+      <div style="float:left;height:80px;bottom: 0px;margin-left: 8px;">
+        <p style="font-family: {{.site.UserProperties.font}};font-size:36px;"><a href="/index.html">{{ .site.Title}}</a></p>
+		<p style="font-family: {{.site.UserProperties.font}};font-size:22px;">{{ .site.Description}}</p>
+      </div>
+      {{$pagename := .page.Name}}
+      <div style="float:right;height:80px;bottom: 0px;margin-right: 16px;">
+        <div style="bottom:0px;">
+          <p style="font-family: {{.site.UserProperties.font}};font-size:28px;">
+            {{range $id, $el := .sections}}{{ if gt $id 0}} | {{end}} <a href="{{.URLPath}}">{{.Title}}</a>{{end}}
+          </p>
+          <p style="font-family: {{.site.UserProperties.font}};font-size:22px;">
+            {{$length := len .pages}}{{if gt $length 1}}
+            {{range $id, $el := .pages}}{{ if gt $id 0}} | {{end}}<a  href="{{.URLPath}}">{{.Title}}</a> {{end}}
+            {{end}}
+          </p>
+        </div>
+      </div>
+    </div>
+    <hr/>
+  </header>
+  <div style="margin-top:120px;overflow: hidden;">
+    <div style="text-align: center;">
+      <h1>{{.page.Title}}</h1>
+      {{.body}}
+
+      (generated from "{{.page.Path}}")
+    </div>
+  </div>
+    <footer>
+      <div style="bottom:0px; text-align: center;">
+        {{range .site.UserProperties.socialmedia}} <a href="{{.url}}" target="_blank">{{.title}} | </a>{{end}}
+        <p style="font-family: {{.site.UserProperties.font}};font-size:24px;">
+          <a href="{{.site.UserProperties.webcontact.url}}">{{.site.UserProperties.webcontact.title}}</a>
+        </p>
+      </div>
+    </footer>
+    {{ .cbanner }}
+</body>
+</html>

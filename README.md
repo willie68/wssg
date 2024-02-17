@@ -150,15 +150,15 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 `{{.Title}}` der Titel der Seite
 
-# Plugins
+# Prozesoren
 
 ## markdown
 
-Markdown ist ein Plugin oder besser Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
+Markdown ist ein Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
 
 ## plain
 
-Beim plain Plugin wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden jedoch vorgenommen, die Seite aber nicht weiter verarbeitet. Dieses Plugin ist als Default gesetzt.
+Beim plain Prozessor wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden jedoch vorgenommen, die Seite aber nicht weiter verarbeitet. Dieser Prozessor ist als Default gesetzt.
 
 ## gallery
 
@@ -185,7 +185,7 @@ listonly: true
 
 `images`: gibt das Verzeichnis an, wo die zu verarbeitenden Bilddaten liegen. Es kann nur ein Ordner angegeben werden. Alle Bilddaten darin werden dann verarbeitet. Als Bilder werden Dateien mit folgenden Endungen betrachtet: `*.jpeg, *.jpg, *.bmp, *.png` 
 
-`thumbswidth`: ist die Breite der Thumbs, die von dem Plugin automatisch generiert werden.
+`thumbswidth`: ist die Breite der Thumbs, die von dem Prozessor automatisch generiert werden.
 
 `crop`: mit der boolschen Ausdruck crop kann man die Thumbnails entsprechend ihrer Breite abschneiden. Bei `false` bleibt bei den Thumbs das Seitenverhältnis erhalten, `true` erzeugt quadratische Thumbnails der Breite `thumbswidth`. 
 

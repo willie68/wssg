@@ -1,0 +1,20 @@
+baseurl: example.com
+title: example
+description: a short description of this site
+keywords: tutorial basic static website
+language: en
+userproperties:
+    cookiebanner:
+        enabled: false
+        text: ""
+    font: Tahoma, Verdana, sans-serif
+    socialmedia:
+        facebook:
+            title: FB
+            url: https://www.facebook.com/wilfried.klaas/
+        youtube:
+            title: YT
+            url: https://www.youtube.com/channel/UCg5ZpZJGuLgz4maETfUc9EA
+    webcontact:
+        title: info@example.com
+        url: mailto:info@example.com

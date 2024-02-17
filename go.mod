@@ -23,6 +23,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/onsi/gomega v1.30.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
+	github.com/samber/do v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
 	golang.org/x/sys v0.13.0 // indirect

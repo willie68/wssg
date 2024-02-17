@@ -1,6 +1,9 @@
 package config
 
-import "github.com/stretchr/objx"
+import (
+	"github.com/stretchr/objx"
+	"github.com/willie68/wssg/processors"
+)
 
 // Page the configuration of a single page, used by frontmatter
 type Page struct {
@@ -14,7 +17,7 @@ var (
 	PageDefault = Page{
 		Title:     "{{.name}}",
 		Name:      "{{.name}}",
-		Processor: ProcMarkdown,
+		Processor: processors.DefaultProcessor,
 	}
 )
 

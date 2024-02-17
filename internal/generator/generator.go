@@ -11,15 +11,14 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/adrg/frontmatter"
+	"github.com/samber/do"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
-	"github.com/willie68/wssg/internal/plugins"
-	"github.com/willie68/wssg/internal/plugins/gallery"
-	"github.com/willie68/wssg/internal/plugins/mdtohtml"
-	"github.com/willie68/wssg/internal/plugins/plain"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/processors"
+	"github.com/willie68/wssg/processors/processor"
 	"github.com/willie68/wssg/templates"
 	"gopkg.in/yaml.v3"
 )
@@ -207,7 +206,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	if err != nil {
 		return err
 	}
-	proc := secCnf.Get("processor").Str(config.ProcMarkdown)
+	procName := secCnf.Get("processor").Str(processors.DefaultProcessor)
 
 	// process pageCnf
 	defaults := make(objx.Map)
@@ -217,7 +216,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 		title = secCnf.Get("title").String()
 	}
 	defaults["name"] = name
-	defaults["processor"] = proc
+	defaults["processor"] = procName
 	defaults["title"] = title
 	err = mergo.Merge(&pageCnf, defaults)
 	if err != nil {
@@ -276,20 +275,15 @@ func (g *Generator) processPage(pg model.Page) error {
 	if err != nil {
 		return err
 	}
-	var processor plugins.Plugin
 
-	switch pg.Processor {
-	case gallery.PluginName:
-		processor = gallery.New(pg.Cnf)
-	case config.ProcMarkdown:
-		processor = mdtohtml.New()
-	default:
-		processor = plain.New()
+	proc := do.MustInvokeNamed[processor.Processor](nil, pg.Processor)
+	if proc == nil {
+		return fmt.Errorf("Processor with name \"%s\" not registered", pg.Processor)
 	}
 
-	// now process page with plugin
+	// now process page with processor
 	// set converted md as body
-	res, err := processor.CreateBody(dt, pg)
+	res, err := proc.CreateBody(dt, pg)
 	if err != nil {
 		return err
 	}
@@ -309,7 +303,7 @@ func (g *Generator) processPage(pg model.Page) error {
 
 	// load html layout
 	//TODO layout.html should be in the site config
-	layFile := filepath.Join(g.rootFolder, config.WssgFolder, processor.HTMLTemplateName())
+	layFile := filepath.Join(g.rootFolder, config.WssgFolder, proc.HTMLTemplateName())
 	layout, err := os.ReadFile(layFile)
 	if err != nil {
 		return err

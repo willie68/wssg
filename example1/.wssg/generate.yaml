@@ -1,0 +1,7 @@
+output: ./.wssg/output
+procmime:
+    text/html: plain
+    text/markdown: markdown
+    text/plain: plain
+autoreload: ""
+force: false
