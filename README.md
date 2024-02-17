@@ -332,3 +332,11 @@ upl-40:
 Ja, wenn du gerne mal den Output Ordner löschen und neu generieren möchtest, kannst du natürlich vor dem `wssg generate` den Ordner löschen. Oder du benutzt das `-c (--clear)` Flag. Damit wird sowohl vor dem `generate` wie auch beim `serve` das Ausgabeverzeichnis (Default: `.wssg/output`) einmal gelöscht. 
 
 Du kannst auch das `output` Verzeichnis während des `wssg serve` löschen. `wssg` wird dann automatisch das `generate` ausführen.
+
+## Kann ich einen eigenen Prozessor bauen?
+
+Mit ein bisschen Programmiererfahrung in Golang kannst du natürlich einen eigenen Prozessor bauen. 
+
+Als erstes solltest du das Projekt von Github forken. ([wssg](http://github.com/willie68/wssg))
+
+Dann kannst du dir deinen Fork auschecken und bearbeiten. Prozessoren liegen im Prozessor Ordner. Jeder Prozessor hat hier einen eigenen Unterordner.  Am einfachsten ist es den Plain Prozessor zu kopieren und entsprechend umzubenennen.  Im `init()` des Package wird dann der Prozessor in dem Dependencies Injection framework registriert. (`do.ProvideNamedValue`) Damit diese Init Funktion auch angesprochen wird, muss in der `main.go` (Root Ordner) noch ein anonymer Import auf dein neues Package gemacht werden.  Ab jetzt steht dein Prozessor mit dem Namen zu Verfügung, den du ihm in der `Name()` Methode mit gegeben hast. Wenn du dann fertig bist, kannst du gerne einen PR stellen, dann kann ich evtl. deinen Prozessor mit in den wssg Standard übernehmen.
