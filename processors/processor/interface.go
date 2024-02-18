@@ -7,6 +7,7 @@ import (
 
 // Response contains scripts, styles and the body
 type Response struct {
+	Render bool
 	Body   string
 	Script string
 	Style  string

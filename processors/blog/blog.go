@@ -4,6 +4,7 @@ package blog
 // every blogentry is a single markdown file. The index.md is the starting page for this.
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -115,18 +116,29 @@ func writeEntries(file string, be []BlogEntry) error {
 }
 
 // Name returning the name of this processor
-func (b *Processor) Name() string {
+func (p *Processor) Name() string {
 	return "blog"
 }
 
 // CreateBody interface method to create a html body from a markdown file
-func (b *Processor) CreateBody(content []byte, _ model.Page) (*processor.Response, error) {
+func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Response, error) {
+	rdr := pg.Name == "index"
+	if rdr {
+		contentFile := filepath.Join(pg.SourceFolder, "_content.yaml")
+		entries, err := readEntries(contentFile)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Printf("%v\r\n", entries)
+		bpp := pg.Cnf.Get("pagination").Int(1)
+	}
 	return &processor.Response{
-		Body: string(content),
+		Body:   string(content),
+		Render: rdr,
 	}, nil
 }
 
 // HTMLTemplateName returning the used html template
-func (b *Processor) HTMLTemplateName() string {
+func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }

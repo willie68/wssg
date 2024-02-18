@@ -61,7 +61,8 @@ func (p *Processor) CreateBody(content []byte, _ model.Page) (*processor.Respons
 	// convert md to html
 	ht := mdToHTML(md)
 	return &processor.Response{
-		Body: string(ht),
+		Render: true,
+		Body:   string(ht),
 	}, nil
 }
 

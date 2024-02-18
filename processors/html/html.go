@@ -1,4 +1,4 @@
-package plain
+package html
 
 import (
 	"fmt"
@@ -25,7 +25,7 @@ func New() processor.Processor {
 
 // Name returning the name of this processor
 func (p *Processor) Name() string {
-	return "plain"
+	return "html"
 }
 
 // AddPage adding the new page

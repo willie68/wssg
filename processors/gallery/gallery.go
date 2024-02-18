@@ -191,6 +191,7 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 	if err != nil {
 		return nil, err
 	}
+	res.Render = true
 	return res, nil
 }
 

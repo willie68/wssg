@@ -287,6 +287,9 @@ func (g *Generator) processPage(pg model.Page) error {
 	if err != nil {
 		return err
 	}
+	if !res.Render {
+		return nil
+	}
 	pg.Cnf["body"] = res.Body
 	pg.Cnf["style"] = res.Style
 	pg.Cnf["script"] = res.Script
