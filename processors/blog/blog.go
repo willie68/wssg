@@ -4,6 +4,7 @@ package blog
 // every blogentry is a single markdown file. The index.md is the starting page for this.
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -129,16 +130,67 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 		if err != nil {
 			return nil, err
 		}
+		slices.SortFunc(entries, func(a, b BlogEntry) int {
+			return b.Created.Compare(a.Created)
+		})
+
+		md2html := do.MustInvokeNamed[processor.Processor](nil, "markdown")
 		fmt.Printf("%v\r\n", entries)
 		bpp := pg.Cnf.Get("pagination").Int(1)
+		pc := 0
+		ress := make([]processor.Response, 0)
+		for x, be := range entries {
+			mdf := filepath.Join(pg.SourceFolder, be.Name)
+			dt, err := os.ReadFile(mdf)
+			if err != nil {
+				return nil, err
+			}
+			res, err := md2html.CreateBody(dt, pg)
+			if err != nil {
+				return nil, err
+			}
+			ress = append(ress, *res)
+
+			if x%bpp == (bpp - 1) {
+				savePage(content, pc, ress, pg)
+				pc++
+				// create a new page, save to old one
+				fmt.Printf("save page %v\r\n", ress)
+				fmt.Printf("new page %d, %d\r\n", x, pc)
+				ress = make([]processor.Response, 0)
+			}
+		}
+		if len(ress) > 0 {
+			savePage(content, pc, ress, pg)
+			pc++
+			// create a new page, save to old one
+			fmt.Printf("save page %v\r\n", ress)
+			fmt.Printf("new page %d\r\n", pc)
+			ress = make([]processor.Response, 0)
+		}
 	}
 	return &processor.Response{
 		Body:   string(content),
-		Render: rdr,
+		Render: false,
 	}, nil
 }
 
 // HTMLTemplateName returning the used html template
 func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
+}
+
+func savePage(content []byte, pc int, ress []processor.Response, pg model.Page) error {
+	os.MkdirAll(pg.DestFolder, 0777)
+	name := fmt.Sprintf("page%d.html", pc)
+	if pc == 0 {
+		name = "index.html"
+	}
+	var bb bytes.Buffer
+	for _, res := range ress {
+		bb.WriteString(res.Body)
+	}
+	pg.Cnf["blogentries"] = bb.String()
+	fn := filepath.Join(pg.DestFolder, name)
+	return os.WriteFile(fn, bb.Bytes(), 0777)
 }
