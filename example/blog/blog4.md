@@ -4,4 +4,5 @@ name: 'blog4'
 processor: 'blog'
 title: 'blog4'
 ---
+<hr/>
 This is a new blog entry with the title {{.title}} created at {{.created}}

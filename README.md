@@ -273,6 +273,8 @@ title: 'Neuer Kunde'
 
 `created` gibt nur an, wann die Seite erzeugt worden ist. Änderungen wirken sich nicht aus. Zusätzlich wird eine List von Blogeinträgen in der Datei `_content.yaml` gepflegt. Diese enthält den Namen des Eintrags und das Erzeugungsdatum, welches dann auch im Blogeintrag als Makro zur Verfügung steht. 
 
+**Hinweis**: will man den Namen des Bereiches ändern, reicht es nicht, den Namen (title) in der index.md zu ändern. Der Name des Bereiches (title) steht in der `.wssg/section.yaml`. 
+
 # Beispiel
 
 Ein Beispiel für die Vielseitigkeit des `wssg` befindet sich im Verzeichnis `example`. Dieses kann man `wssg generate` oder `wssg serve` verwenden.

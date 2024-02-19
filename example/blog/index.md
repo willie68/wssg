@@ -1,11 +1,13 @@
 ---
 name: 'index'
 processor: 'blog'
-title: 'index'
-pagination: 3
+title: 'News'
+pagination: 2
 ---
-This is a new page with the title {{.title}}
 
-{{if .prevPage}} <a href="{{.prevPage}}">zurück</a>{{end}} {{if .nextPage}} <a href="{{.nextPage}}">nächste</a>{{end}} 
+{{if .prevPage}} <a href="{{.prevPage}}">zurück</a>{{end}} {{if .nextPage}} <a href="{{.nextPage}}">nächste Seite</a>{{end}} ({{.entryCount}} Einträge)
 
 {{.blogentries}}
+
+<hr/>
+{{.actualPage}}/{{.pageCount}}

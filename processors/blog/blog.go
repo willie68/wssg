@@ -148,6 +148,12 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 		bpp := pg.Cnf.Get("pagination").Int(1)
 		pc := 0
 		ress := make([]processor.Response, 0)
+		pg.Cnf["pageCount"] = (len(entries) / bpp) + 1
+		if len(entries)%bpp == 0 {
+			pg.Cnf["pageCount"] = (len(entries) / bpp)
+		}
+		pg.Cnf["entryCount"] = len(entries)
+
 		for x, be := range entries {
 			mdf := filepath.Join(pg.SourceFolder, be.Name)
 			dt, err := os.ReadFile(mdf)
@@ -162,7 +168,7 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 			ress = append(ress, *res)
 
 			if x%bpp == (bpp - 1) {
-				err := p.savePage(content, pc, ress, pg, x < len(entries))
+				err := p.savePage(content, pc, ress, pg, x+1 < len(entries))
 				if err != nil {
 					return nil, err
 				}
@@ -245,11 +251,12 @@ func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, 
 	if hasNext {
 		pg.Cnf["nextPage"] = getPageName(pc+1) + ".html"
 	}
+	pg.Cnf["actualPage"] = pc + 1
 
 	// merging the blog eintries to one html part
 	var bb bytes.Buffer
 	for _, res := range ress {
-		bb.WriteString(res.Body)
+		_, _ = bb.WriteString(res.Body)
 	}
 	pg.Cnf["blogentries"] = bb.String()
 
