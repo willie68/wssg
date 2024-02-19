@@ -15,6 +15,7 @@ import (
 
 	"github.com/samber/do"
 	"github.com/stretchr/objx"
+	"github.com/willie68/wssg/internal/interfaces"
 	"github.com/willie68/wssg/internal/model"
 	"github.com/willie68/wssg/internal/utils"
 	"github.com/willie68/wssg/processors/processor"
@@ -121,6 +122,11 @@ func (p *Processor) Name() string {
 	return "blog"
 }
 
+// CanRenderPage all pages of the processor should be rendered
+func (p *Processor) CanRenderPage(pg model.Page) bool {
+	return pg.Name == "index"
+}
+
 // CreateBody interface method to create a html body from a markdown file
 func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Response, error) {
 	rdr := pg.Name == "index"
@@ -152,20 +158,14 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 			ress = append(ress, *res)
 
 			if x%bpp == (bpp - 1) {
-				savePage(content, pc, ress, pg)
+				p.savePage(content, pc, ress, pg)
 				pc++
-				// create a new page, save to old one
-				fmt.Printf("save page %v\r\n", ress)
-				fmt.Printf("new page %d, %d\r\n", x, pc)
 				ress = make([]processor.Response, 0)
 			}
 		}
 		if len(ress) > 0 {
-			savePage(content, pc, ress, pg)
+			p.savePage(content, pc, ress, pg)
 			pc++
-			// create a new page, save to old one
-			fmt.Printf("save page %v\r\n", ress)
-			fmt.Printf("new page %d\r\n", pc)
 			ress = make([]processor.Response, 0)
 		}
 	}
@@ -180,17 +180,30 @@ func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }
 
-func savePage(content []byte, pc int, ress []processor.Response, pg model.Page) error {
-	os.MkdirAll(pg.DestFolder, 0777)
-	name := fmt.Sprintf("page%d.html", pc)
+func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, pg model.Page) error {
+	// creating the right page name
+	pg.Name = fmt.Sprintf("page%d", pc)
 	if pc == 0 {
-		name = "index.html"
+		pg.Name = "index"
 	}
+
+	// merging the blog eintries to one html part
 	var bb bytes.Buffer
 	for _, res := range ress {
 		bb.WriteString(res.Body)
 	}
 	pg.Cnf["blogentries"] = bb.String()
-	fn := filepath.Join(pg.DestFolder, name)
-	return os.WriteFile(fn, bb.Bytes(), 0777)
+
+	// converting the md page to html
+	md2html := do.MustInvokeNamed[processor.Processor](nil, "markdown")
+	res, err := md2html.CreateBody(content, pg)
+	if err != nil {
+		return err
+	}
+	// set the html as body for the layout.html
+	pg.Cnf["body"] = res.Body
+
+	// generate the final html page
+	gen := do.MustInvoke[interfaces.Generator](nil)
+	return gen.RenderHTML(p.HTMLTemplateName(), pg)
 }

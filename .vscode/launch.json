@@ -94,7 +94,6 @@
       "output": "${workspaceFolder}/debug.exe",
       "args": [
         "generate",
-        "-f",
         "-c",
         "--verbose",
         "-r",

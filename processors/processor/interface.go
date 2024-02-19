@@ -18,6 +18,10 @@ type Processor interface {
 	// Name Getting the name of the processor
 	Name() string
 
+	// CanRenderPage this should be a quick check, if the processor can determine, if the page should be rendered.
+	// If not the page will not be added to the render pages
+	CanRenderPage(pg model.Page) bool
+
 	// AddPage this method will be called if a new page will be added to a secrion of this processor
 	AddPage(folder, pagefile string) (objx.Map, error)
 

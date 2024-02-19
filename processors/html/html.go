@@ -28,6 +28,11 @@ func (p *Processor) Name() string {
 	return "html"
 }
 
+// CanRenderPage all pages of the processor should be rendered
+func (p *Processor) CanRenderPage(_ model.Page) bool {
+	return true
+}
+
 // AddPage adding the new page
 func (p *Processor) AddPage(folder, pagefile string) (m objx.Map, err error) {
 	return

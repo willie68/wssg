@@ -14,6 +14,7 @@ import (
 	"github.com/samber/do"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/config"
+	"github.com/willie68/wssg/internal/interfaces"
 	"github.com/willie68/wssg/internal/logging"
 	"github.com/willie68/wssg/internal/model"
 	"github.com/willie68/wssg/internal/utils"
@@ -71,6 +72,7 @@ func New(rootFolder string, force bool, gs ...Option) Generator {
 		gf(g)
 	}
 	g.init()
+	do.ProvideValue[interfaces.Generator](nil, &g)
 	return g
 }
 
@@ -243,7 +245,14 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 		DestFolder:   dstFolder,
 	}
 	pg = g.pageURLPath(pg)
-	g.pages = append(g.pages, *pg)
+	proc := do.MustInvokeNamed[processor.Processor](nil, pg.Processor)
+	if proc == nil {
+		return fmt.Errorf("Processor with name \"%s\" not registered", pg.Processor)
+	}
+	ok := proc.CanRenderPage(*pg)
+	if ok {
+		g.pages = append(g.pages, *pg)
+	}
 	return nil
 }
 
@@ -275,12 +284,21 @@ func (g *Generator) processPage(pg model.Page) error {
 	if err != nil {
 		return err
 	}
+	banner := ""
+	if bn, ok := pg.Cnf["cookiebanner"].(objx.Map); ok {
+		if bn.Get("enabled").Bool(false) {
+			banner = templates.Cookiebanner
+			if !bn.Has("text") {
+				bn["text"] = templates.CookiebannerText
+			}
+		}
+	}
+	pg.Cnf["cbanner"] = banner
 
 	proc := do.MustInvokeNamed[processor.Processor](nil, pg.Processor)
 	if proc == nil {
 		return fmt.Errorf("Processor with name \"%s\" not registered", pg.Processor)
 	}
-
 	// now process page with processor
 	// set converted md as body
 	res, err := proc.CreateBody(dt, pg)
@@ -293,20 +311,17 @@ func (g *Generator) processPage(pg model.Page) error {
 	pg.Cnf["body"] = res.Body
 	pg.Cnf["style"] = res.Style
 	pg.Cnf["script"] = res.Script
-	banner := ""
-	if bn, ok := pg.Cnf["cookiebanner"].(objx.Map); ok {
-		if bn.Get("enabled").Bool(false) {
-			banner = templates.Cookiebanner
-			if !bn.Has("text") {
-				bn["text"] = templates.CookiebannerText
-			}
-		}
-	}
-	pg.Cnf["cbanner"] = banner
 
+	if !res.Render {
+		return nil
+	}
+	return g.RenderHTML(proc.HTMLTemplateName(), pg)
+}
+
+func (g *Generator) RenderHTML(layoutName string, pg model.Page) error {
 	// load html layout
 	//TODO layout.html should be in the site config
-	layFile := filepath.Join(g.rootFolder, config.WssgFolder, proc.HTMLTemplateName())
+	layFile := filepath.Join(g.rootFolder, config.WssgFolder, layoutName)
 	layout, err := os.ReadFile(layFile)
 	if err != nil {
 		return err
