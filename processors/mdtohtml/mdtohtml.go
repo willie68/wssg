@@ -64,7 +64,7 @@ func (p *Processor) CreateBody(content []byte, _ model.Page) (*processor.Respons
 		return nil, err
 	}
 	// convert md to html
-	ht := mdToHTML(md)
+	ht := MdToHTML(md)
 	return &processor.Response{
 		Render: true,
 		Body:   string(ht),
@@ -76,7 +76,7 @@ func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }
 
-func mdToHTML(md []byte) []byte {
+func MdToHTML(md []byte) []byte {
 	// create markdown parser with extensions
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)

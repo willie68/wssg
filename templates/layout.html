@@ -29,9 +29,9 @@
       z-index: 100;
     }
   </style>
-  <style>{{ .style }} </style>
-  <script>{{ .script }} </script>
-  <script>{{ .generator.Autoreload }}</script>
+  <style>{{ if .style}} {{ .style }} {{ end }}</style>
+  <script>{{ if .script}} {{ .script }} {{ end }}</script>
+  <script>{{ if .generator.Autoreload }} {{ .generator.Autoreload }} {{ end }}</script>
 </head>
 
 <body>

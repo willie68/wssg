@@ -42,11 +42,11 @@ type Generator struct {
 }
 
 // Option func to set a generator option
-type Option func(Generator)
+type Option func(*Generator)
 
 // WithAutoreload adapt autorelaod
 func WithAutoreload(b bool) Option {
-	return func(g Generator) {
+	return func(g *Generator) {
 		g.autoreload = b
 	}
 }
@@ -69,7 +69,7 @@ func New(rootFolder string, force bool, gs ...Option) Generator {
 		log:        logging.New().WithName("generator"),
 	}
 	for _, gf := range gs {
-		gf(g)
+		gf(&g)
 	}
 	g.init()
 	do.ProvideValue[interfaces.Generator](nil, &g)

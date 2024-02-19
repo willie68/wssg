@@ -9,15 +9,20 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
+	"text/template"
 	"time"
 
 	_ "embed"
 
+	"github.com/adrg/frontmatter"
+	"github.com/goodsign/monday"
 	"github.com/samber/do"
 	"github.com/stretchr/objx"
 	"github.com/willie68/wssg/internal/interfaces"
 	"github.com/willie68/wssg/internal/model"
 	"github.com/willie68/wssg/internal/utils"
+	"github.com/willie68/wssg/processors/mdtohtml"
 	"github.com/willie68/wssg/processors/processor"
 	"gopkg.in/yaml.v3"
 )
@@ -140,8 +145,6 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 			return b.Created.Compare(a.Created)
 		})
 
-		md2html := do.MustInvokeNamed[processor.Processor](nil, "markdown")
-		fmt.Printf("%v\r\n", entries)
 		bpp := pg.Cnf.Get("pagination").Int(1)
 		pc := 0
 		ress := make([]processor.Response, 0)
@@ -151,27 +154,69 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 			if err != nil {
 				return nil, err
 			}
-			res, err := md2html.CreateBody(dt, pg)
+			res, err := p.md2html(dt, pg, be)
 			if err != nil {
 				return nil, err
 			}
+
 			ress = append(ress, *res)
 
 			if x%bpp == (bpp - 1) {
-				p.savePage(content, pc, ress, pg, x < len(entries))
+				err := p.savePage(content, pc, ress, pg, x < len(entries))
+				if err != nil {
+					return nil, err
+				}
 				pc++
 				ress = make([]processor.Response, 0)
 			}
 		}
 		if len(ress) > 0 {
-			p.savePage(content, pc, ress, pg, false)
-			pc++
-			ress = make([]processor.Response, 0)
+			err := p.savePage(content, pc, ress, pg, false)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return &processor.Response{
 		Body:   string(content),
 		Render: false,
+	}, nil
+}
+
+func (p *Processor) md2html(content []byte, pg model.Page, be BlogEntry) (*processor.Response, error) {
+	// extract md
+	bemap := make(objx.Map)
+	md, err := frontmatter.Parse(strings.NewReader(string(content)), &bemap)
+	if err != nil {
+		return nil, err
+	}
+	// for macro substitution
+	bemap = pg.Cnf.Copy().Merge(bemap)
+	bemap["created"] = be.Created
+
+	tmpl, err := template.New("blogmd").Funcs(template.FuncMap{
+		"dtFormat": func(dt time.Time, f, l string) string {
+			return monday.Format(dt, f, monday.Locale(l))
+		},
+	}).Parse(string(md))
+
+	if err != nil {
+		return nil, err
+	}
+	var bb bytes.Buffer
+	err = tmpl.Execute(&bb, bemap)
+	if err != nil {
+		return nil, err
+	}
+
+	// convert md to html
+	ht := mdtohtml.MdToHTML(bb.Bytes())
+
+	// now process all macros in the html
+
+	return &processor.Response{
+		Render: true,
+		Body:   string(ht),
 	}, nil
 }
 

@@ -241,6 +241,38 @@ Die aufbereitete Bilderliste wird dann an die Stelle `{{.images}}` der MD Datei 
 
 `listonly:` es werden nur die Images, die in `imagelist` stehen, verwendet. Weitere Images in dem Quellordner werden für diese Galerie ignoriert.
 
+## Blog
+
+Um einen Blog zu erzeugen, wird der Blog Prozessor verwendet. Zunächst muss ein Bereich mit dem Blog Prozessor erzeugt werden.
+
+`wssg new section -p blog MyBlog`
+
+erzeugt einen neuen Bereich `MyBlog`. Die neue `index.md` in dem Verzeichnis MyBlog ist dann der Container für die verschiedenen Einträge. Folgende Einstellungen findet man in der Datei (Frontmatter yaml)
+
+```yaml
+name: 'index'
+processor: 'blog'
+title: 'index'
+pagination: 3
+```
+
+`name, processor` und `title` kennen wir schon. `pagination` gibt an wie viele Blogeinträge es pro Seite gibt. Jeder Blogeintrag ist eine eigene Markdown-Datei. Die Reihgenfolge ist automatisch nach Erzeugungsdatum absteigend sortiert. Einen neuen Eintrag erzeugt man mit 
+
+`wssg new page -p blog MyBlog/Blog1`
+
+Der neue Blog Eintrag hat nun den Namen Blog1 und kann mit der Datei blog1.md editiert werden. 
+
+Auch hier gibt es etwas Frontmatter yaml:
+
+```yaml
+created: 2024-02-18T11:35:12.5003594+01:00
+name: 'blog8'
+processor: 'blog'
+title: 'Neuer Kunde'
+```
+
+`created` gibt nur an, wann die Seite erzeugt worden ist. Änderungen wirken sich nicht aus. Zusätzlich wird eine List von Blogeinträgen in der Datei `_content.yaml` gepflegt. Diese enthält den Namen des Eintrags und das Erzeugungsdatum, welches dann auch im Blogeintrag als Makro zur Verfügung steht. 
+
 # Beispiel
 
 Ein Beispiel für die Vielseitigkeit des `wssg` befindet sich im Verzeichnis `example`. Dieses kann man `wssg generate` oder `wssg serve` verwenden.
@@ -340,3 +372,81 @@ Mit ein bisschen Programmiererfahrung in Golang kannst du natürlich einen eigen
 Als erstes solltest du das Projekt von Github forken. ([wssg](http://github.com/willie68/wssg))
 
 Dann kannst du dir deinen Fork auschecken und bearbeiten. Prozessoren liegen im Prozessor Ordner. Jeder Prozessor hat hier einen eigenen Unterordner.  Am einfachsten ist es den Plain Prozessor zu kopieren und entsprechend umzubenennen.  Im `init()` des Package wird dann der Prozessor in dem Dependencies Injection framework registriert. (`do.ProvideNamedValue`) Damit diese Init Funktion auch angesprochen wird, muss in der `main.go` (Root Ordner) noch ein anonymer Import auf dein neues Package gemacht werden.  Ab jetzt steht dein Prozessor mit dem Namen zu Verfügung, den du ihm in der `Name()` Methode mit gegeben hast. Wenn du dann fertig bist, kannst du gerne einen PR stellen, dann kann ich evtl. deinen Prozessor mit in den wssg Standard übernehmen.
+
+## Wie formatiere ich ein Datum in meiner Sprache in einem Blogeintrag? 
+
+Um das Erzeugungsdatum eine Blogeintrages als Makro zu benutzen dient das `.created` Makro.  Die normale Form ist aber für die Anzeige kaum zu gebrauchen. (  `2024-02-18 11:35:06.7435846 +0100 CET` ) 
+Im Blog Prozessor steht deswegen eine eigene Formatierungsfunktion zur Verfügung. Diese wird folgendermassen benutzt:
+
+```
+{{ dtFormat .created "Monday, 2.01.06" "de_DE" }}
+```
+
+`dtFormat` ist der Name der Funktion, dann folgen 3 Parameter.  
+`.created` ist das Feld, was den Datumstempel enthält. 
+`"Monday, 2.01.06"` ist das Layout, wie das Datum als Text dargestellt werden soll. Im Anhang findet man eine kleine Hilfe dazu.
+`"de_DE"` ist das Gebietsschema. Die wichtigsten sind: `"en_US", "en_GB", "de_DE", "fr_FR", "es_ES"`. Weitere Schemata auf Anfrage.
+
+# Anhang
+
+## Golang Datumsformat
+
+| Go layout | Format | Example  | Description     |
+| --------- | ------ | -------- | --------------- |
+| 2006      | YYYY   | `"2022"` | Four-digit year |
+| 06        | YY     | `"22"`   | Two-digit year  |
+
+| Go layout | Format | Example  | Description                                     |
+| --------- | ------ | -------- | ----------------------------------------------- |
+| January   | MMMM   | `"July"` | Full month name                                 |
+| Jan       | MMM    | `"Jul"`  | Three-letter abbreviation of the month          |
+| 01        | MM     | `"07"`   | Two-digit month (with a leading 0 if necessary) |
+| 1         | M      | `"7"`    | At most two-digit month (without a leading 0)   |
+
+| Go layout | Format | Example     | Description                                                  |
+| --------- | ------ | ----------- | ------------------------------------------------------------ |
+| Monday    | DDDD   | `"Tuesday"` | Full weekday name                                            |
+| Mon       | DDD    | `"Tue"`     | Three-letter abbreviation of the weekday                     |
+| 02        | DD     | `"08"`      | Two-digit month day (with a leading 0 if necessary)          |
+| _2        | _D     | `" 8"`      | Two-character month day with a leading space if necessary    |
+| 2         | D      | `"8"`       | At most two-digit month day (without a leading 0)            |
+| 002       | ddd    | `"074"`     | Three-digit day of the year (with a leading 0 if necessary)  |
+| __2       | __d    | `" 74"`     | Three-character day of the year with a leading spaces if necessary |
+
+### Time format
+
+| Go layout | Format | Example | Description                                               |
+| --------- | ------ | ------- | --------------------------------------------------------- |
+| 15        | hh     | `"17"`  | Two-digit 24h format hour                                 |
+| 03        | hh     | `"05"`  | Two digit 12h format hour (with a leading 0 if necessary) |
+| 3         | h      | `"5"`   | At most two-digit 12h format hour (without a leading 0)   |
+| PM        | am/pm  | `"AM"`  | AM/PM mark (uppercase)                                    |
+| pm        | am/pm  | `"am"`  | AM/PM mark (lowercase)                                    |
+
+| Go layout | Format | Example | Description                                      |
+| --------- | ------ | ------- | ------------------------------------------------ |
+| 04        | mm     | `"07"`  | Two-digit minute (with a leading 0 if necessary) |
+| 4         | m      | `"7"`   | At most two-digit minute (without a leading 0)   |
+
+| Go layout              | Format | Example        | Description                                      |
+| ---------------------- | ------ | -------------- | ------------------------------------------------ |
+| 05                     | ss     | `"09"`         | Two-digit second (with a leading 0 if necessary) |
+| 5                      | s      | `"9"`          | At most two-digit second (without a leading 0)   |
+| .0, .00, …, .000000000 | .s     | `".126284000"` | A fractional second (trailing zeros included)    |
+| .9, .99, …, .999999999 | .s     | `".126284"`    | A fractional second (trailing zeros omitted)     |
+
+### Time zone format
+
+| Go layout | Format         | Example       | Description                                                  |
+| --------- | -------------- | ------------- | ------------------------------------------------------------ |
+| MST       | TTT            | `"CEST"`      | Abbreviation of the time zone                                |
+| -070000   | ±hhmmss        | `"+010000"`   | Numeric time zone offset with hours, minutes, and seconds    |
+| -07:00:00 | ±hh:mm:ss      | `"+01:00:00"` | Numeric time zone offset with hours, minutes, and seconds separated by colons |
+| -0700     | ±hhmm          | `"+0100"`     | Numeric time zone offset with hours and minutes              |
+| -07:00    | ±hh:mm         | `"+01:00"`    | Numeric time zone offset with hours and minutes separated by colons |
+| -07       | ±hh            | `"+01"`       | Numeric time zone offset with hours                          |
+| Z070000   | Z or ±hhmmss   | `"+010000"`   | Like -070000 but prints `"Z"` instead of `"+000000"` for the UTC zone (ISO 8601 behavior) |
+| Z07:00:00 | Z or ±hh:mm:ss | `"+01:00:00"` | Like -07:00:00 but prints `"Z"` instead of `"+00:00:00"` for the UTC zone (ISO 8601 behavior) |
+| Z0700     | Z or ±hhmm     | `"+0100"`     | Like -0700 but prints `"Z"` instead of `"+0000"` for the UTC zone (ISO 8601 behavior) |
+| Z07:00    | Z or ±hh:mm    | `"+01:00"`    | Like -07:00 but prints `"Z"` instead of `"+00:00"` for the UTC zone (ISO 8601 behavior) |
+| Z07       | Z or ±hh       | `"+01"`       | Like -07 but prints `"Z"` instead of `"+00"` for the UTC zone (ISO 8601 behavior) |

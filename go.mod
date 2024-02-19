@@ -9,7 +9,9 @@ require (
 	github.com/aphistic/golf v0.0.0-20180712155816-02c07f170c5a
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gomarkdown/markdown v0.0.0-20231222211730-1d6d20845b47
+	github.com/goodsign/monday v1.0.2
 	github.com/rwcarlsen/goexif v0.0.0-20190401172101-9e8deecbddbd
+	github.com/samber/do v1.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/objx v0.5.1
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
@@ -22,8 +24,6 @@ require (
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/onsi/gomega v1.30.0 // indirect
-	github.com/rs/xid v1.5.0 // indirect
-	github.com/samber/do v1.6.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/image v0.0.0-20220302094943-723b81ca9867 // indirect
 	golang.org/x/sys v0.13.0 // indirect
