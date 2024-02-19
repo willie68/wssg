@@ -188,6 +188,8 @@ func getPageName(pc int) string {
 }
 
 func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, pg model.Page, hasNext bool) error {
+	pg.Cnf["prevPage"] = ""
+	pg.Cnf["nextPage"] = ""
 	// creating the right page name
 	pg.Name = getPageName(pc)
 	if pc == 0 {
