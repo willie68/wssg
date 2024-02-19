@@ -261,18 +261,28 @@ func (p *Processor) writeFluidImageHTMLList(g galleryPage) (string, error) {
 	return b.String(), nil
 }
 
+func (p *Processor) thumbWorker(wg *sync.WaitGroup, g galleryPage, jobs <-chan img) {
+	for j := range jobs {
+		err := p.creatThumb(g.dstFolder, j, g.width, g.force, g.crop)
+		wg.Done()
+		if err != nil {
+			p.log.Errorf("error creating thumbnail: %s, %v", j.Name, err)
+		}
+	}
+}
+
 func (p *Processor) generateThumbs(g galleryPage) {
+	jobs := make(chan img, 100)
+	defer close(jobs)
 	var wg sync.WaitGroup
+
+	for w := 1; w <= 3; w++ {
+		go p.thumbWorker(&wg, g, jobs)
+	}
 	for _, i := range g.images {
 		wg.Add(1)
 		img := i
-		go func() {
-			defer wg.Done()
-			err := p.creatThumb(g.dstFolder, img, g.width, g.force, g.crop)
-			if err != nil {
-				p.log.Errorf("error creating thumbnail: %s, %v", img.Name, err)
-			}
-		}()
+		jobs <- img
 	}
 	wg.Wait()
 }

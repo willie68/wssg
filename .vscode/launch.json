@@ -95,6 +95,7 @@
       "args": [
         "generate",
         "-c",
+        "-f",
         "--verbose",
         "-r",
         "./example"
