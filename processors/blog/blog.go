@@ -158,13 +158,13 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 			ress = append(ress, *res)
 
 			if x%bpp == (bpp - 1) {
-				p.savePage(content, pc, ress, pg)
+				p.savePage(content, pc, ress, pg, x < len(entries))
 				pc++
 				ress = make([]processor.Response, 0)
 			}
 		}
 		if len(ress) > 0 {
-			p.savePage(content, pc, ress, pg)
+			p.savePage(content, pc, ress, pg, false)
 			pc++
 			ress = make([]processor.Response, 0)
 		}
@@ -180,11 +180,23 @@ func (p *Processor) HTMLTemplateName() string {
 	return "layout.html"
 }
 
-func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, pg model.Page) error {
+func getPageName(pc int) string {
+	if pc == 0 {
+		return "index"
+	}
+	return fmt.Sprintf("page%d", pc)
+}
+
+func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, pg model.Page, hasNext bool) error {
 	// creating the right page name
-	pg.Name = fmt.Sprintf("page%d", pc)
+	pg.Name = getPageName(pc)
 	if pc == 0 {
 		pg.Name = "index"
+	} else {
+		pg.Cnf["prevPage"] = getPageName(pc-1) + ".html"
+	}
+	if hasNext {
+		pg.Cnf["nextPage"] = getPageName(pc+1) + ".html"
 	}
 
 	// merging the blog eintries to one html part
