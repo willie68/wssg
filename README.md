@@ -55,7 +55,7 @@ Während der Webserver läuft, kannst du nun deine Webseite bearbeiten. Jede Än
 
 # Aufbau
 
-Das Programm ist für folgende Struktur am besten geeignet. Die erste Ebene (Root) ist quais der Startpunkt. Dort muss für den Start eine index.md erstellt werden. Diese wird automatisch beim `wssg init` angelegt. Hier können dann weitere Seiten (pages) hinzugefügt werden. Zusätzliche Dateien, wie z.B. Bilder, Stylesheets, JS usw. können sowohl in den Rootordner wie auch in weiteren Unterordnern abgelegt werden. Unterordner können dann einfach per relativer Angabe referenziert werden. 
+Das Programm ist für folgende Struktur am besten geeignet. Die erste Ebene (Root) ist quasi der Startpunkt. Dort muss für den Start eine index.md erstellt werden. Diese wird automatisch beim `wssg init` angelegt. Hier können dann weitere Seiten (pages) hinzugefügt werden. Zusätzliche Dateien, wie z.B. Bilder, Stylesheets, JS usw. können sowohl in den Rootordner wie auch in weiteren Unterordnern abgelegt werden. Unterordner können dann einfach per relativer Angabe referenziert werden. 
 
 Möchte man einen neuen Bereich (section) mit verschiedene Seiten anlegen, kann man das mit `wssg new section <name>` machen. Dabei wird nun, ebenso wie im root Ordner, ein Unterverzeichnis .wssg mit den Einstellungen für diesen Bereich erstellt.  
 
@@ -91,13 +91,15 @@ cookiebanner:
 
 Die Eigenschaften sind eigentlich selbsterklärend. Alle Eigenschaften stehen auf jeder Seite zur Verfügung und können auch von jeder Seite überschrieben werden. Zusätzlich sind diese auch unter dem Bereich "site" (nicht überschreibbar) zugreifbar. 
 
+### Besonderheiten
+
 `cookiebanner:` Mit dem cookiebanner kann eine Cookiebanner aktiviert werden. Der angegebene Text wird dann automatisch beim 1. Aufruf der Startseite eingeblendet.
 
 # Seitenaufbau
 
 ## Frontmatter für Markdown
 
-Die Markdown-Dateien sollten den Inhalt sollten mit einem Frontmatter Bereich starten. Dieser startet am Anfang der Datei mit `---` und endet ebenfalls mit `---`. Dazwischen steht ein Bereich mit Optionen für die aktuelle Seite im yaml Format:
+Die Markdown-Dateien sollten vor dem Inhalt mit einem Frontmatter Bereich starten. Dieser startet am Anfang der Datei mit `---` und endet ebenfalls mit `---`. Dazwischen steht ein Bereich mit Optionen für die aktuelle Seite im yaml Format:
 
 ```yaml
 ---
@@ -108,17 +110,17 @@ order: 10
 ---
 ```
 
-`name`: technischer Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` 
+`name`: technischer Name der Seite. Dieser wird u.a. für die Referenzierung und für die Html-Generierung verwendet. Erlaubt sind folgende Zeichen: `a-z,0-9,-,_` Die Namen in einem Bereich sollten alle unterschiedlich sein. Am einfachsten kann man das machen, indem man als Namen einfach den Dateinamen ohne .md verwendet.
 
-`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor. Derzeit steht nur `markdown`, `gallery` und `plain` zur Verfügung. 
+`processor`: Der Prozessor steht für den zu verwendenden Generierungsprozessor.  
 
 `title`: Der Seitentitel für die Anzeige z.B. in Menüs. Hier können auch Sonderzeichen verwendet werden.
 
 `order`: steht für die Sortierungsfolge. Beim Abruf aller Seiten über {{ range .pages}} werden die Seiten nach dieser Reihenfolge aufsteigend sortiert. Der absolute Wert spielt keine Rolle, d.h. es muss nicht 0,1,2 verwendet werden. Um nachträglich Seiten einzufügen kann man auch 10 , 20, 30 für den Start benutzen. So kann man später neue Seite bei 15, 25 usw. einfügen.
 
-Es können weitere Parameter angegeben werden, die von den jeweiligen layout/Plugin/Prozessor definiert werden.  Oder auch nur von der eigenen Seite.
+Es können weitere Parameter angegeben werden, die von den jeweiligen layout/Plugin/Prozessor definiert werden.  Oder auch nur von der eigenen Seite als Makros verwendet werden.
 
-## Variablen für eine Seite
+## Variablen/Makros für eine Seite
 
 `{{.body}}` ergibt den konvertierten Text aus der Markdown Datei.
 
@@ -150,19 +152,21 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 `{{.Title}}` der Titel der Seite
 
+`{{range $id, $el := .sections}} ... {{end}}` kann über alle Bereiche iteriert werden. Auch hier sind die gleichen Makros wie bei den Seiten möglich.
+
 # Prozesoren
 
 ## markdown
 
-Markdown ist ein Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Ersetzungen berücksichtigt. 
+Markdown ist ein Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Makros berücksichtigt. 
 
 ## plain
 
-Beim plain Prozessor wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Ersetzungen werden jedoch vorgenommen, die Seite aber nicht weiter verarbeitet. Dieser Prozessor ist als Default gesetzt.
+Beim plain Prozessor wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Makros werden jedoch ausgewertet, die Seite aber nicht weiter verarbeitet. Dieser Prozessor ist als Default gesetzt.
 
 ## gallery
 
-Wird ein Prozessor gallery gesetzt, wird eine Bildgallery generiert. Folgende Frontmatter Parameter werden zusätzlich verwendet:
+Wird ein Prozessor `gallery` gesetzt, wird eine Bildgallery generiert. Folgende Frontmatter Parameter werden zusätzlich verwendet:
 
 ```yaml
 ---
@@ -183,7 +187,7 @@ listonly: true
 ---
 ```
 
-`images`: gibt das Verzeichnis an, wo die zu verarbeitenden Bilddaten liegen. Es kann nur ein Ordner angegeben werden. Alle Bilddaten darin werden dann verarbeitet. Als Bilder werden Dateien mit folgenden Endungen betrachtet: `*.jpeg, *.jpg, *.bmp, *.png` 
+`images`: gibt das Verzeichnis an, wo die zu verarbeitenden Bilddaten liegen. Es kann nur ein Ordner angegeben werden. Alle Bilddaten darin werden dann verarbeitet. Als Bilder werden Dateien mit folgenden Endungen betrachtet: `*.jpeg, *.jpg, *.bmp, *.png` Der Bildordner kann irgendwo auf deiner Festplatte liegen. Die verwendeten Bilder werden dann automatisch kopiert.
 
 `thumbswidth`: ist die Breite der Thumbs, die von dem Prozessor automatisch generiert werden.
 
