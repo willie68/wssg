@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "configurations": [
 
+
     {
       "name": "wssg init",
       "type": "go",
@@ -114,7 +115,7 @@
         "-f",
         "--verbose",
         "-r",
-        "H:/privat/nxt-vs/Volker Sauber/sauber"
+        "G:/nxt-vs/Volker Sauber/sauber"
       ]
     },
     {
@@ -144,7 +145,38 @@
         "serve",
         "--verbose",
         "-r",
-        "H:/privat/nxt-vs/Volker Sauber/sauber"
+        "G:/nxt-vs/Volker Sauber/sauber"
+      ]
+    },
+    {
+      "name": "Britta wssg generate",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "generate",
+        "-f",
+        "--verbose",
+        "-r",
+        "H:/privat/nxt_willie/Britta/Webseite/neu/patchworkstatt"
+      ]
+    },
+    {
+      "name": "Britta wssg serve",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/main.go",
+      "cwd": "${workspaceFolder}",
+      "output": "${workspaceFolder}/debug.exe",
+      "args": [
+        "serve",
+        "--verbose",
+        "-r",
+        "H:/privat/nxt_willie/Britta/Webseite/neu/patchworkstatt"
       ]
     }
   ]

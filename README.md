@@ -393,6 +393,26 @@ Im Blog Prozessor steht deswegen eine eigene Formatierungsfunktion zur Verfügun
 `"Monday, 2.01.06"` ist das Layout, wie das Datum als Text dargestellt werden soll. Im Anhang findet man eine kleine Hilfe dazu.
 `"de_DE"` ist das Gebietsschema. Die wichtigsten sind: `"en_US", "en_GB", "de_DE", "fr_FR", "es_ES"`. Weitere Schemata auf Anfrage.
 
+## Kann ich aus den Output ein Dockerimage mit HTTP-Server bauen?
+
+Aber klar, das ist sogar sehr einfach. Zunächst musst du im .wssg Ordner eine Datei `Dockerfile` mit folgenden Inhalt erstellen. 
+
+```dockerfile
+FROM httpd:2.4
+COPY ./output/ /usr/local/apache2/htdocs/
+```
+
+Ich verwende sehr gerne den Apache httpd Server.
+
+Zu, Erzeugen und starten des Images rufst du dann auf: (mein-image kannst du gerne gegen was anderes tauschen)
+
+```shell
+docker build -t mein-image-httpd .
+docker run --name mein-image -p 9080:80 -d mein-image-httpd
+```
+
+Nach dem Build und Startprozess hast du nun einen neuen Container mit deiner Webseite laufen. Diesen kannst du jetzt unter `http://localhost:9080` erreichen.
+
 # Anhang
 
 ## Golang Datumsformat
