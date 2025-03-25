@@ -6,7 +6,7 @@ Willie's Static Site Generator
 
 Darum. Ich finde jeder Programmierer sollte so ein paar Sachen mal programmiert haben. Hello World, Sortieralgorithmus, Datenbank, Website Generator. Letzterer fehlte mir noch.
 
-Und da ich gerade eine einfache Seite für einen Freund bauen sollte, die er später auch selber pflegen kann, kam ich auf diese Idee. Natürlich habe ich erst andere Generatoren ausprobiert. Ganz viele waren vor allem für ein Thema Blogs, Blogs und nochmal Blogs. Aber ich wollte keinen Blog, ich wollte einfach ein paar einfache Seiten am besten als markdown mit ein paar Bildern, mehr nicht. Ich wollte keine neue Verzeichnisstruktur lernen, einfach ein Verzeichnis erzeugen, Dateien reinlegen, oder noch besser nur editieren, weil die Dateien schon da sind. Evtl. noch das LAyout anpassen und schon hat man seine statische Seite.  
+Und da ich gerade eine einfache Seite für einen Freund bauen sollte, die er später auch selber pflegen kann, kam ich auf diese Idee. Natürlich habe ich erst andere Generatoren ausprobiert. Ganz viele waren vor allem für ein Thema Blogs, Blogs und nochmal Blogs. Aber ich wollte keinen Blog, ich wollte einfach ein paar einfache Seiten am besten als markdown mit ein paar Bildern, mehr nicht. Ich wollte keine neue Verzeichnisstruktur lernen, einfach ein Verzeichnis erzeugen, Dateien reinlegen, oder noch besser nur editieren, weil die Dateien schon da sind. Evtl. noch das Layout anpassen und schon hat man seine statische Seite.  
 
 # Basis
 
