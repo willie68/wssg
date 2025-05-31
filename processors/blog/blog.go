@@ -136,7 +136,7 @@ func (p *Processor) CanRenderPage(pg model.Page) bool {
 func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Response, error) {
 	rdr := pg.Name == "index"
 	if rdr {
-		et := pg.Cnf.Get("entrytemplate").Str(".content")
+		et := pg.Cnf.Get("entrytemplate").Str("{{.content}}")
 
 		contentFile := filepath.Join(pg.SourceFolder, "_content.yaml")
 		entries, err := readEntries(contentFile)

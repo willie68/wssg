@@ -251,6 +251,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	}
 	ok := proc.CanRenderPage(*pg)
 	if ok {
+		g.log.Debugf("page can be rendered with %s processor", pg.Processor)
 		g.pages = append(g.pages, *pg)
 	}
 	return nil
