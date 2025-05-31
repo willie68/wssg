@@ -136,18 +136,29 @@ func (p *Processor) CanRenderPage(pg model.Page) bool {
 func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Response, error) {
 	rdr := pg.Name == "index"
 	if rdr {
+		et := pg.Cnf.Get("entrytemplate").Str(".content")
+
 		contentFile := filepath.Join(pg.SourceFolder, "_content.yaml")
 		entries, err := readEntries(contentFile)
 		if err != nil {
 			return nil, err
 		}
+		or := false // descending
+		v := pg.Cnf.Get("order").Str("desc")
+		if v != "desc" {
+			or = true // ascending
+		}
 		slices.SortFunc(entries, func(a, b BlogEntry) int {
-			return b.Created.Compare(a.Created)
+			cmp := b.Created.Compare(a.Created)
+			if or {
+				cmp = -cmp
+			}
+			return cmp
 		})
 
 		bpp := pg.Cnf.Get("pagination").Int(1)
 		pc := 0
-		ress := make([]processor.Response, 0)
+		ress := make([]string, 0)
 		pg.Cnf["pageCount"] = (len(entries) / bpp) + 1
 		if len(entries)%bpp == 0 {
 			pg.Cnf["pageCount"] = (len(entries) / bpp)
@@ -165,7 +176,29 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 				return nil, err
 			}
 
-			ress = append(ress, *res)
+			tmpl, err := template.New("entry").Parse(et)
+			if err != nil {
+				return nil, err
+			}
+
+			var bb bytes.Buffer
+			bemap := make(objx.Map)
+			_, err = frontmatter.Parse(strings.NewReader(string(dt)), &bemap)
+			if err != nil {
+				return nil, err
+			}
+			bemap = pg.Cnf.Copy().Merge(bemap)
+			bemap["created"] = be.Created
+			bemap["content"] = string(res)
+			bemap["entrynumber"] = x
+			bemap["entryeven"] = (x%2 == 0)
+
+			err = tmpl.Execute(&bb, bemap)
+			if err != nil {
+				return nil, err
+			}
+
+			ress = append(ress, bb.String())
 
 			if x%bpp == (bpp - 1) {
 				err := p.savePage(content, pc, ress, pg, x+1 < len(entries))
@@ -173,7 +206,7 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 					return nil, err
 				}
 				pc++
-				ress = make([]processor.Response, 0)
+				ress = make([]string, 0)
 			}
 		}
 		if len(ress) > 0 {
@@ -189,12 +222,12 @@ func (p *Processor) CreateBody(content []byte, pg model.Page) (*processor.Respon
 	}, nil
 }
 
-func (p *Processor) md2html(content []byte, pg model.Page, be BlogEntry) (*processor.Response, error) {
+func (p *Processor) md2html(content []byte, pg model.Page, be BlogEntry) (string, error) {
 	// extract md
 	bemap := make(objx.Map)
 	md, err := frontmatter.Parse(strings.NewReader(string(content)), &bemap)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	// for macro substitution
 	bemap = pg.Cnf.Copy().Merge(bemap)
@@ -207,12 +240,12 @@ func (p *Processor) md2html(content []byte, pg model.Page, be BlogEntry) (*proce
 	}).Parse(string(md))
 
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 	var bb bytes.Buffer
 	err = tmpl.Execute(&bb, bemap)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// convert md to html
@@ -220,10 +253,7 @@ func (p *Processor) md2html(content []byte, pg model.Page, be BlogEntry) (*proce
 
 	// now process all macros in the html
 
-	return &processor.Response{
-		Render: true,
-		Body:   string(ht),
-	}, nil
+	return string(ht), nil
 }
 
 // HTMLTemplateName returning the used html template
@@ -238,7 +268,7 @@ func getPageName(pc int) string {
 	return fmt.Sprintf("page%d", pc)
 }
 
-func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, pg model.Page, hasNext bool) error {
+func (p *Processor) savePage(content []byte, pc int, ress []string, pg model.Page, hasNext bool) error {
 	pg.Cnf["prevPage"] = ""
 	pg.Cnf["nextPage"] = ""
 	// creating the right page name
@@ -256,7 +286,7 @@ func (p *Processor) savePage(content []byte, pc int, ress []processor.Response, 
 	// merging the blog eintries to one html part
 	var bb bytes.Buffer
 	for _, res := range ress {
-		_, _ = bb.WriteString(res.Body)
+		_, _ = bb.WriteString(res)
 	}
 	pg.Cnf["blogentries"] = bb.String()
 
