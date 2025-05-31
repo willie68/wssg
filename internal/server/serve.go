@@ -92,10 +92,10 @@ func (s *Server) doEvent() {
 				continue
 			}
 			s.log.Infof("event: %v, file: %s", event, fn)
-			if event.Has(fsnotify.Write) {
+			absPath, err := filepath.Abs(event.Name)
+			if event.Has(fsnotify.Write) && s.output != absPath {
 				s.generate(event.Name)
 			}
-			absPath, err := filepath.Abs(event.Name)
 			if err == nil && s.output == absPath {
 				if event.Has(fsnotify.Remove) {
 					s.generate(event.Name)

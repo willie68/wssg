@@ -65,7 +65,7 @@ func CreatePage(rootFolder string, name string, processorName string, force bool
 		sections = sections[:len(sections)-1]
 	}
 
-	log.Infof("creating a new page in section \"%v\" with name: %s", sections, name)
+	log.Infof("creating a new page in section \"%v\" with name: %s, using processor: %s", sections, name, processorName)
 	pageFolder := filepath.Join(rootFolder, filepath.Join(sections...))
 	if len(sections) > 0 {
 		ok := checkSection(pageFolder)

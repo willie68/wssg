@@ -156,15 +156,15 @@ Für die aktuelle Seite sind folgende Variablen definiert:
 
 # Prozesoren
 
-## markdown
+## Markdown
 
 Markdown ist ein Prozessor, der MD Dateien in HTML verwandelt. Dabei werden automatisch die o.g. Makros berücksichtigt. 
 
-## plain
+## Plain
 
 Beim plain Prozessor wird der Seiteninhalt ohne Prozessor direkt als HTML interpretiert. Makros werden jedoch ausgewertet, die Seite aber nicht weiter verarbeitet. Dieser Prozessor ist als Default gesetzt.
 
-## gallery
+## Gallery
 
 Wird ein Prozessor `gallery` gesetzt, wird eine Bildgallery generiert. Folgende Frontmatter Parameter werden zusätzlich verwendet:
 
@@ -258,9 +258,27 @@ name: 'index'
 processor: 'blog'
 title: 'index'
 pagination: 3
+order: 'asc' #oder 'desc'
+entrytemplate: '.content'
 ```
 
-`name, processor` und `title` kennen wir schon. `pagination` gibt an wie viele Blogeinträge es pro Seite gibt. Jeder Blogeintrag ist eine eigene Markdown-Datei. Die Reihgenfolge ist automatisch nach Erzeugungsdatum absteigend sortiert. Einen neuen Eintrag erzeugt man mit 
+`name, processor` und `title` kennen wir zwar schon, aber hier werden die Einträge nur für die interne verarbeitung genutzt. D.h. konkret bei diesem Blogprozessor muss die Einstiegsseite `index` heißen. Also den Namen hier nicht ändern. Den Namen der Sektion kann man in der `.wssg/section.yaml` ändern. `pagination` gibt an wie viele Blogeinträge es pro Seite gibt. Jeder Blogeintrag ist eine eigene Markdown-Datei. Die Reihgenfolge ist automatisch nach Erzeugungsdatum absteigend sortiert, wenn `order` nicht angegeben wird. Bei `order: 'asc'` wird automatisch nach Erzeugungsdatum aufsteigend sortiert, also das älteste zuerst. mit entrytemplate kann man zusätzlich das Format jedes einzelnen Eintrages modifizieren. 
+
+Beispielsweise würde:
+
+```yaml
+entrytemplate: '<div><table><tr><td>{{`{{if .entryeven}}`}}<img src="{{`{{.image}}`}}" height="300"/></td><td>{{`{{.content}}`}}{{`{{else}}`}}{{`{{.content}}`}}</td><td><img src="{{`{{.image}}`}}" height="300"/>{{`{{end}}`}}</td></tr></table></div>'
+```
+
+einen Wechselblog erzeugen. D.h. es gibt pro Blog 2 Einträge, `.content` ist der tatsächliche Text und `.image` wurde einfach im FM des Blobeintrages hinzugefügt und enthält einen Link zu einem Bild.
+`.entryeven` wird vom Blogprozessor erzeugt und ist `true`, wenn eine gerade Seite gerendert werden soll. 
+`.entrynumber` ist die laufende Nummer des Blogs und kann ebenfalls verwendet werden.
+
+Nun wird bei geraden Einträgen links das Bild und rechts der Text erzeugt. Bei ungeraden Einträgen genau anders herum.
+
+Und nochmal, wundert euch nicht über die doppelte `{{ }}` Syntax. Dieses Template wird 2x verarbeitet. Einmal wenn die Seite startet, um z.B. Titel, Description oder andere Dinge aus der zentralen Konfiguration oder der Seitenkonfiguration zu benutzen. Pro Blogeintrag wird das Template dann nochmal verarbeitet, um die eintragspezifischen Dinge einzusetzen.  
+
+Einen neuen Eintrag erzeugt man mit 
 
 `wssg new page -p blog MyBlog/Blog1`
 
@@ -276,6 +294,8 @@ title: 'Neuer Kunde'
 ```
 
 `created` gibt nur an, wann die Seite erzeugt worden ist. Änderungen wirken sich nicht aus. Zusätzlich wird eine List von Blogeinträgen in der Datei `_content.yaml` gepflegt. Diese enthält den Namen des Eintrags und das Erzeugungsdatum, welches dann auch im Blogeintrag als Makro zur Verfügung steht. 
+
+Neue Einträge kann man hier belibig machen und z.B. im `entrytemplate` verwenden.
 
 **Hinweis**: will man den Namen des Bereiches ändern, reicht es nicht, den Namen (title) in der index.md zu ändern. Der Name des Bereiches (title) steht in der `.wssg/section.yaml`. 
 

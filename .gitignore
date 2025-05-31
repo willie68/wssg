@@ -26,3 +26,7 @@ dist/
 
 
 example/gallery2/
+
+.vscode/
+
+scripts/
