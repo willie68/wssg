@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "../go-micro"
+		},
+		{
+			"path": "../../../cloudspace/nxt_rock-o-co/website/rock-o-co"
 		}
 	],
 	"settings": {}

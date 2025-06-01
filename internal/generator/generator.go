@@ -32,7 +32,7 @@ const (
 type Generator struct {
 	rootFolder string
 	force      bool
-	genConfig  config.Generate
+	config     config.Generate
 	siteConfig config.Site
 	sections   map[string]objx.Map
 	pages      []model.Page
@@ -79,17 +79,17 @@ func New(rootFolder string, force bool, gs ...Option) Generator {
 func (g *Generator) init() {
 	g.sections = make(map[string]objx.Map)
 	g.siteConfig = config.LoadSite(g.rootFolder)
-	g.genConfig = config.LoadGenConfig(g.rootFolder)
+	g.config = config.LoadGenConfig(g.rootFolder)
 	if g.autoreload {
-		g.genConfig.Autoreload = templates.AutoreloadJS
+		g.config.Autoreload = templates.AutoreloadJS
 	}
 	g.pages = make([]model.Page, 0)
-	g.genConfig.Force = g.force
+	g.config.Force = g.force
 }
 
 // ClearOutput clean the output folder
 func (g *Generator) ClearOutput() {
-	destPath := filepath.Join(g.rootFolder, g.genConfig.Output)
+	destPath := filepath.Join(g.rootFolder, g.config.Output)
 	err := os.RemoveAll(destPath)
 	if err != nil {
 		g.log.Errorf("error cleaning up the output folder: %v", err)
@@ -103,7 +103,7 @@ func (g *Generator) SiteConfig() config.Site {
 
 // GenConfig return the configuration of the generator
 func (g *Generator) GenConfig() config.Generate {
-	return g.genConfig
+	return g.config
 }
 
 // Execute walk thru the folders and register section/pages. After that processing each file.
@@ -231,7 +231,7 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 	order := pageCnf.Get("order").Int(0)
 	srcFolder := filepath.Dir(path)
 	sections := strings.Split(section, "/")
-	dstFolder := filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
+	dstFolder := filepath.Join(g.rootFolder, g.config.Output, filepath.Join(sections...))
 	pg := &model.Page{
 		Name:         pageCnf.Get("name").String(),
 		Title:        pageCnf.Get("title").String(),
@@ -259,10 +259,10 @@ func (g *Generator) registerPage(section string, path string, info os.FileInfo) 
 
 func (g *Generator) pageURLPath(pg *model.Page) *model.Page {
 	if pg.Section == "" || pg.Section == rootSection {
-		pg.URLPath = fmt.Sprintf("%s.html", pg.Name)
+		pg.URLPath = fmt.Sprintf("%s%s.html", g.config.Basepath, pg.Name)
 		return pg
 	}
-	pg.URLPath = fmt.Sprintf("/%s/%s.html", pg.Section, pg.Name)
+	pg.URLPath = fmt.Sprintf("%s%s/%s.html", g.config.Basepath, pg.Section, pg.Name)
 	return pg
 }
 
@@ -278,7 +278,7 @@ func (g *Generator) processPage(pg model.Page) error {
 	pages := g.filterSortPages(pg.Section)
 	pg.Cnf["pages"] = pages
 	pg.Cnf["sections"] = g.filterSortSections()
-	pg.Cnf["generator"] = g.genConfig
+	pg.Cnf["generator"] = g.config
 
 	// load file
 	dt, err := os.ReadFile(pg.Path)
@@ -334,7 +334,7 @@ func (g *Generator) RenderHTML(layoutName string, pg model.Page) error {
 	// write html to output
 	var destPath string
 	sections := strings.Split(pg.Section, "/")
-	destPath = filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
+	destPath = filepath.Join(g.rootFolder, g.config.Output, filepath.Join(sections...))
 	err = os.MkdirAll(destPath, 755)
 	if err != nil {
 		return err
@@ -364,7 +364,7 @@ func (g *Generator) filterSortSections() []config.Section {
 	sl := make([]config.Section, 0)
 	for key, sec := range g.sections {
 		if !strings.HasPrefix(key, "_") {
-			sc := config.G2Section(sec)
+			sc := g.G2Section(sec)
 			sl = append(sl, sc)
 		}
 	}
@@ -376,6 +376,43 @@ func (g *Generator) filterSortSections() []config.Section {
 		return sl[i].Name < sl[j].Name
 	})
 	return sl
+}
+
+var (
+	keyNames = []string{"name", "title", "processor"}
+)
+
+// G2Section convert a general struct to a section
+func (g *Generator) G2Section(gm objx.Map) config.Section {
+	up := make(objx.Map)
+	for k, v := range gm {
+		use := true
+		for _, f := range keyNames {
+			if k == f {
+				use = false
+			}
+		}
+		if use {
+			up[k] = v
+		}
+	}
+	name := gm.Get("name").Str("no_name")
+	return config.Section{
+		Name:           name,
+		Title:          gm.Get("title").Str("no title given"),
+		Processor:      gm.Get("processor").Str(processors.DefaultProcessor),
+		URLPath:        g.sectionURLPath(name),
+		Order:          gm.Get("order").Int(0),
+		UserProperties: up,
+	}
+}
+
+func (g *Generator) sectionURLPath(name string) string {
+	if name == "" || name == rootSection {
+		return g.config.Basepath
+	}
+	url := fmt.Sprintf("/%s%s/", g.config.Basepath, name)
+	return url
 }
 
 func (g *Generator) mergeHTML(layout string, cnf objx.Map) ([]byte, error) {
@@ -433,7 +470,7 @@ func (g *Generator) processPageCnf(pageCnf objx.Map, secCnf objx.Map) (objx.Map,
 
 func (g *Generator) copy2Output(section string, path string, info os.FileInfo) error {
 	sections := strings.Split(section, "/")
-	destPath := filepath.Join(g.rootFolder, g.genConfig.Output, filepath.Join(sections...))
+	destPath := filepath.Join(g.rootFolder, g.config.Output, filepath.Join(sections...))
 
 	err := os.MkdirAll(destPath, 755)
 	if err != nil {
@@ -466,13 +503,4 @@ func (g *Generator) getSectionConfig(section string) objx.Map {
 	}
 	g.sections[section] = cnf
 	return cnf
-}
-
-func (g *Generator) getRegisteredPageCnf(name string) (*model.Page, bool) {
-	for _, v := range g.pages {
-		if v.Name == name {
-			return &v, true
-		}
-	}
-	return nil, false
 }

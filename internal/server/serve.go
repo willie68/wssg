@@ -122,6 +122,8 @@ func (s *Server) generate(name string) {
 
 // Serve starting the http server serving the files
 func (s *Server) Serve() error {
+	server := http.NewServeMux()
+
 	err := s.StartWatcher()
 	if err != nil {
 		return err
@@ -129,8 +131,9 @@ func (s *Server) Serve() error {
 	defer s.watcher.Close()
 
 	fileServer := http.FileServer(http.Dir(s.output))
-	http.Handle("/", fileServer)
-	http.HandleFunc("/_refresh", func(w http.ResponseWriter, r *http.Request) {
+	rootpath := fmt.Sprintf("/%s", s.gen.GenConfig().Basepath)
+	server.Handle(rootpath, http.StripPrefix(rootpath, fileServer))
+	server.HandleFunc("/_refresh", func(w http.ResponseWriter, r *http.Request) {
 		refresh := struct {
 			Refresh bool `json:"refresh"`
 		}{
@@ -155,9 +158,13 @@ func (s *Server) Serve() error {
 			s.log.Errorf("error output refresh: %v", err)
 		}
 	})
-	s.log.Info("start serving site. use http://localhost:8080/index.html for the result. Stopping server with ctrl+c.")
-	open("http://localhost:8080/index.html")
-	return http.ListenAndServe(":8080", nil)
+	url := fmt.Sprintf("http://localhost:8080/%sindex.html", s.gen.GenConfig().Basepath)
+	s.log.Infof("start serving site. use %s for the result. Stopping server with ctrl+c.", url)
+	err = open(url)
+	if err != nil {
+		return err
+	}
+	return http.ListenAndServe(":8080", server)
 }
 
 func open(url string) error {
